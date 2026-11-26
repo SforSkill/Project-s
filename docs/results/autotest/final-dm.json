@@ -1,0 +1,38 @@
+{
+  "bots": 5,
+  "fps_avg": 231.4205780029297,
+  "frame_ms": {
+    "avg": 4.321136951446533,
+    "max": 70.6842041015625,
+    "p50": 4.172900199890137,
+    "p95": 5.313300132751465,
+    "p99": 6.931399822235107
+  },
+  "frames": 5786,
+  "map": "ps_citadel",
+  "max_remote_players": 3,
+  "mode": "deathmatch",
+  "net": {
+    "cmd_buffer": 2.509845495223999,
+    "correction_p95": 0.0,
+    "corrections": 1,
+    "decode_errors": 0,
+    "interp_ticks": 2.520031690597534,
+    "jitter_ms": 1.6250989437103271,
+    "rtt_ms": 6.4664740562438965,
+    "shots_inspected": 40,
+    "snapshot_bytes_avg": 227.38123627235646,
+    "snapshots": 3187,
+    "snapshots_lost": 0,
+    "tick_rate": 128.0,
+    "urgent_events": 126
+  },
+  "screenshots": [
+    "autotest-1-jeu.png",
+    "autotest-2-graphe-reseau.png",
+    "autotest-3-scores.png"
+  ],
+  "seconds": 25.0,
+  "server": "local (embarqué)",
+  "status": "ok"
+}

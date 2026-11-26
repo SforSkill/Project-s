@@ -1,0 +1,82 @@
+name: Release
+
+# Builds the alpha archives from a version tag and attaches them directly to a
+# GitHub pre-release. Assets go straight to the release (no Actions artifacts,
+# whose storage quota is shared by the whole account). A manual run rebuilds the
+# assets of an existing tag: the code is always checked out at that tag.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and publish (e.g. v0.1.0-alpha)"
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  TAG: ${{ inputs.tag || github.ref_name }}
+
+jobs:
+  create:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - name: Create the pre-release if missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" \
+            --prerelease --verify-tag \
+            --title "Project S — $TAG" \
+            --notes-file docs/release-notes.md
+
+  windows:
+    needs: create
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --release --locked -p game-client -p game-server
+      - run: python tools/package.py windows-client
+      - name: Upload to the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" dist/Project-S-Windows-x64.zip dist/Project-S-Windows-x64.zip.sha256 --clobber
+
+  linux:
+    needs: create
+    # 22.04 (glibc 2.35) so the binaries run on Debian 12 / Ubuntu 22.04 VPS.
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --release --locked -p game-client -p game-server
+      - run: python3 tools/package.py linux-server
+      - run: python3 tools/package.py linux-client
+      - name: Smoke test of the packaged server
+        run: |
+          mkdir smoke && tar xzf dist/Project-S-Dedicated-Server-Linux-x64.tar.gz -C smoke
+          cd smoke/projet-s-server && ./projet-s-server --check --config deploy/server.example.toml
+      - name: Upload to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" dist/*.tar.gz dist/*.tar.gz.sha256 --clobber

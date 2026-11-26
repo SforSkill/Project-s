@@ -1,0 +1,38 @@
+{
+  "bots": 5,
+  "fps_avg": 301.2628173828125,
+  "frame_ms": {
+    "avg": 3.3193607330322266,
+    "max": 63.92890167236328,
+    "p50": 3.2605998516082764,
+    "p95": 3.8568999767303467,
+    "p99": 4.367100238800049
+  },
+  "frames": 7533,
+  "map": null,
+  "max_remote_players": 4,
+  "mode": null,
+  "net": {
+    "cmd_buffer": 2.7819278240203857,
+    "correction_p95": 0.0,
+    "corrections": 0,
+    "decode_errors": 0,
+    "interp_ticks": 2.3078980445861816,
+    "jitter_ms": 0.9621810913085938,
+    "rtt_ms": 3.439708709716797,
+    "shots_inspected": 44,
+    "snapshot_bytes_avg": 226.72257053291537,
+    "snapshots": 3190,
+    "snapshots_lost": 0,
+    "tick_rate": 128.0,
+    "urgent_events": 149
+  },
+  "screenshots": [
+    "autotest-1-jeu.png",
+    "autotest-2-graphe-reseau.png",
+    "autotest-3-scores.png"
+  ],
+  "seconds": 25.0,
+  "server": "127.0.0.1:27015",
+  "status": "ok"
+}
