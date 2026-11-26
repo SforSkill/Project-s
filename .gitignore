@@ -1,0 +1,10 @@
+/target
+/dist
+/replays
+*.psrp
+.git/ai-logs/
+/benchmarks/results/*.tmp
+/configs/local*.toml
+.env
+*.pem
+*.key
