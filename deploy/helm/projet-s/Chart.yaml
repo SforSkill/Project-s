@@ -1,0 +1,6 @@
+apiVersion: v2
+name: projet-s
+description: Projet S dedicated game server (skeleton, one match per pod)
+type: application
+version: 0.1.0-alpha
+appVersion: "0.1.0-alpha"
