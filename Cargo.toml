@@ -1,0 +1,82 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/engine-core",
+    "crates/engine-physics",
+    "crates/engine-movement",
+    "crates/engine-weapons",
+    "crates/engine-hitreg",
+    "crates/game-rules",
+    "crates/game-sim",
+    "crates/engine-network",
+    "crates/engine-visibility",
+    "crates/engine-replay",
+    "crates/game-server",
+    "crates/game-netclient",
+    "crates/game-client",
+    "tools/mapgen",
+    "tools/netlab",
+]
+
+[workspace.package]
+version = "0.1.0-alpha"
+edition = "2024"
+rust-version = "1.90"
+license = "LicenseRef-Proprietary"
+publish = false
+repository = "https://github.com/Thaskow/Projet-S"
+
+[workspace.dependencies]
+engine-core = { path = "crates/engine-core" }
+engine-physics = { path = "crates/engine-physics" }
+engine-movement = { path = "crates/engine-movement" }
+engine-weapons = { path = "crates/engine-weapons" }
+engine-hitreg = { path = "crates/engine-hitreg" }
+engine-visibility = { path = "crates/engine-visibility" }
+engine-network = { path = "crates/engine-network" }
+engine-replay = { path = "crates/engine-replay" }
+game-rules = { path = "crates/game-rules" }
+game-sim = { path = "crates/game-sim" }
+game-server = { path = "crates/game-server", default-features = false }
+game-netclient = { path = "crates/game-netclient" }
+
+# glam 0.33 is the version re-exported by bevy_math 0.20: the shared simulation and
+# the client use the very same vector types.
+glam = { version = "0.33", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "1"
+ron = "0.12"
+postcard = { version = "1", default-features = false, features = ["use-std"] }
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+chacha20poly1305 = "0.11"
+x25519-dalek = { version = "3", features = ["static_secrets"] }
+hkdf = "0.13"
+sha2 = "0.11"
+getrandom = "0.4"
+tokio = { version = "1", features = ["rt", "net", "macros", "time", "sync"] }
+axum = { version = "0.8", default-features = false, features = ["http1", "tokio", "json", "query"] }
+prometheus-client = "0.26"
+ctrlc = { version = "3", features = ["termination"] }
+criterion = { version = "0.8", default-features = false }
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+panic = "unwind"
+debug = "line-tables-only"
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+too_many_arguments = "allow"
+type_complexity = "allow"

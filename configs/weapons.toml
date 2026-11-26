@@ -1,0 +1,274 @@
+# Projet S — weapon catalog (original values, inspired by competitive tactical shooters).
+# Units: Source units (1 u = 2.54 cm), seconds, degrees.
+# Rules: the first recoil entry is always [0, 0] (first shot exact); there is no
+# standing spread at all; random spread only while moving or airborne.
+# Recoil entries are cumulative (pitch up, yaw left) offsets for shot index i.
+
+[equipment]
+kevlar_price = 650
+kevlar_helmet_price = 1000
+helmet_upgrade_price = 350
+defuse_kit_price = 400
+max_grenades = 4
+
+[[weapon]]
+id = "knife"
+name = "Couteau"
+kind = "knife"
+slot = "melee"
+price = 0
+kill_reward = 1500
+damage = 40.0
+cycle_time = 0.4
+automatic = true
+mag_size = 0
+reserve = 0
+deploy_time = 0.5
+max_speed = 250.0
+tagging = 0.0
+recoil_pattern = [[0.0, 0.0]]
+[weapon.melee]
+range = 48.0
+damage = 40.0
+backstab_damage = 90.0
+heavy_range = 32.0
+heavy_damage = 65.0
+heavy_backstab_damage = 180.0
+heavy_cycle = 1.0
+
+[[weapon]]
+id = "pistol"
+name = "P-9 « Rivet »"
+kind = "pistol"
+slot = "secondary"
+price = 200
+kill_reward = 300
+damage = 30.0
+range_modifier = 0.85
+head_mult = 4.0
+armor_ratio = 0.505
+penetration = 1.0
+cycle_time = 0.17
+automatic = false
+mag_size = 12
+reserve = 24
+reload_time = 2.2
+deploy_time = 0.8
+max_speed = 240.0
+accurate_fraction = 0.34
+move_spread = 2.6
+air_spread = 5.0
+tagging = 0.35
+recoil_recovery = 8.0
+recoil_recovery_delay = 0.1
+recoil_pattern = [[0.0, 0.0], [0.9, 0.0], [1.7, -0.2], [2.4, 0.2], [3.0, 0.0], [3.5, -0.3]]
+
+[[weapon]]
+id = "smg"
+name = "SM-4 « Wasp »"
+kind = "smg"
+slot = "primary"
+price = 1250
+kill_reward = 600
+damage = 26.0
+range_modifier = 0.82
+head_mult = 4.0
+armor_ratio = 0.6
+penetration = 1.0
+cycle_time = 0.075
+automatic = true
+mag_size = 30
+reserve = 120
+reload_time = 2.1
+deploy_time = 0.9
+max_speed = 240.0
+accurate_fraction = 0.34
+move_spread = 1.8
+air_spread = 4.5
+tagging = 0.32
+recoil_recovery = 11.0
+recoil_recovery_delay = 0.09
+recoil_pattern = [
+  [0.0, 0.0], [0.35, 0.0], [0.75, 0.05], [1.15, 0.1], [1.55, 0.05], [1.9, -0.05],
+  [2.2, -0.2], [2.45, -0.4], [2.65, -0.55], [2.8, -0.5], [2.9, -0.3], [3.0, -0.05],
+  [3.05, 0.2], [3.1, 0.45], [3.15, 0.6], [3.2, 0.55], [3.25, 0.35], [3.3, 0.1],
+  [3.35, -0.15], [3.4, -0.35], [3.45, -0.45], [3.5, -0.4], [3.55, -0.2], [3.6, 0.05],
+  [3.65, 0.25], [3.7, 0.4], [3.75, 0.35], [3.8, 0.15], [3.85, -0.05], [3.9, -0.2],
+]
+
+[[weapon]]
+id = "rifle"
+name = "AR-7 « Kestrel »"
+kind = "rifle"
+slot = "primary"
+price = 2700
+kill_reward = 300
+damage = 36.0
+range_modifier = 0.98
+head_mult = 4.0
+armor_ratio = 0.775
+penetration = 2.0
+cycle_time = 0.1
+automatic = true
+mag_size = 30
+reserve = 90
+reload_time = 2.5
+deploy_time = 1.0
+max_speed = 220.0
+accurate_fraction = 0.34
+move_spread = 3.2
+air_spread = 7.0
+tagging = 0.4
+recoil_recovery = 9.0
+recoil_recovery_delay = 0.12
+recoil_pattern = [
+  [0.0, 0.0], [0.45, 0.0], [1.05, 0.05], [1.8, 0.1], [2.6, 0.05], [3.4, -0.05],
+  [4.1, -0.15], [4.7, -0.1], [5.15, 0.15], [5.5, 0.5], [5.75, 0.9], [5.9, 1.3],
+  [6.0, 1.55], [6.1, 1.6], [6.2, 1.4], [6.3, 1.0], [6.35, 0.5], [6.4, 0.0],
+  [6.45, -0.5], [6.5, -0.95], [6.55, -1.3], [6.6, -1.5], [6.65, -1.55], [6.7, -1.4],
+  [6.75, -1.1], [6.8, -0.7], [6.85, -0.3], [6.9, 0.05], [6.95, 0.35], [7.0, 0.55],
+]
+
+[[weapon]]
+id = "sniper_light"
+name = "LR-2 « Marten »"
+kind = "sniper_light"
+slot = "primary"
+price = 950
+kill_reward = 1000
+damage = 101.0
+range_modifier = 0.99
+head_mult = 2.0
+stomach_mult = 1.0
+legs_mult = 0.85
+armor_ratio = 0.9
+penetration = 2.5
+cycle_time = 0.667
+automatic = false
+mag_size = 5
+reserve = 20
+reload_time = 2.8
+deploy_time = 1.0
+max_speed = 230.0
+accurate_fraction = 0.34
+move_spread = 4.0
+air_spread = 9.0
+unscoped_move_spread_mult = 1.6
+tagging = 0.5
+recoil_recovery = 3.0
+recoil_pattern = [[0.0, 0.0], [1.4, 0.0]]
+[weapon.zoom]
+levels = [35.0]
+zoom_time = 0.1
+unzoom_on_fire = false
+scoped_speed = 230.0
+[[weapon]]
+id = "sniper_heavy"
+name = "HX-50 « Bastion »"
+kind = "sniper_heavy"
+slot = "primary"
+price = 4700
+kill_reward = 100
+damage = 150.0
+range_modifier = 0.99
+head_mult = 1.7
+stomach_mult = 1.0
+legs_mult = 0.75
+armor_ratio = 0.97
+penetration = 3.0
+cycle_time = 1.667
+automatic = false
+mag_size = 5
+reserve = 25
+reload_time = 3.7
+deploy_time = 1.25
+max_speed = 190.0
+accurate_fraction = 0.34
+move_spread = 6.0
+air_spread = 12.0
+unscoped_move_spread_mult = 2.0
+tagging = 0.6
+recoil_recovery = 2.0
+recoil_pattern = [[0.0, 0.0], [2.0, 0.0]]
+[weapon.zoom]
+levels = [40.0, 10.0]
+zoom_time = 0.1
+unzoom_on_fire = true
+scoped_speed = 100.0
+[[weapon]]
+id = "flash"
+name = "Flash"
+kind = "grenade"
+slot = "grenade"
+price = 200
+kill_reward = 300
+grenade = "flash"
+max_carry = 2
+cycle_time = 0.5
+mag_size = 0
+reserve = 0
+deploy_time = 0.5
+max_speed = 245.0
+tagging = 0.0
+
+[[weapon]]
+id = "smoke"
+name = "Fumigène"
+kind = "grenade"
+slot = "grenade"
+price = 300
+kill_reward = 300
+grenade = "smoke"
+max_carry = 1
+cycle_time = 0.5
+mag_size = 0
+reserve = 0
+deploy_time = 0.5
+max_speed = 245.0
+tagging = 0.0
+
+[[weapon]]
+id = "molotov"
+name = "Incendiaire"
+kind = "grenade"
+slot = "grenade"
+price = 500
+kill_reward = 300
+grenade = "molotov"
+max_carry = 1
+cycle_time = 0.5
+mag_size = 0
+reserve = 0
+deploy_time = 0.5
+max_speed = 245.0
+tagging = 0.0
+
+[[weapon]]
+id = "he"
+name = "Grenade HE"
+kind = "grenade"
+slot = "grenade"
+price = 300
+kill_reward = 300
+grenade = "he"
+max_carry = 1
+cycle_time = 0.5
+mag_size = 0
+reserve = 0
+deploy_time = 0.5
+max_speed = 245.0
+tagging = 0.0
+
+[[weapon]]
+id = "bomb"
+name = "Charge"
+kind = "bomb"
+slot = "bomb"
+price = 0
+kill_reward = 0
+cycle_time = 0.5
+mag_size = 0
+reserve = 0
+deploy_time = 0.5
+max_speed = 250.0
+tagging = 0.0
