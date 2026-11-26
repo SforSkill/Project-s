@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-server
+  labels: { app.kubernetes.io/name: projet-s, app.kubernetes.io/instance: {{ .Release.Name }} }
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels: { app.kubernetes.io/name: projet-s, app.kubernetes.io/instance: {{ .Release.Name }} }
+  template:
+    metadata:
+      labels: { app.kubernetes.io/name: projet-s, app.kubernetes.io/instance: {{ .Release.Name }} }
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "27016"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        seccompProfile: { type: RuntimeDefault }
+      terminationGracePeriodSeconds: 15
+      containers:
+        - name: server
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["--map", "{{ .Values.server.map }}", "--mode", "{{ .Values.server.mode }}", "--tick", "{{ .Values.server.tickRate }}", "--bots", "{{ .Values.server.bots }}", "--fill-bots", "{{ if .Values.server.fillBots }}1{{ else }}0{{ end }}"]
+          ports:
+            - { name: game, containerPort: 27015, protocol: UDP }
+            - { name: admin, containerPort: 27016, protocol: TCP }
+          {{- if .Values.adminTokenSecret }}
+          env:
+            - name: PROJET_S_ADMIN_TOKEN
+              valueFrom: { secretKeyRef: { name: {{ .Values.adminTokenSecret }}, key: PROJET_S_ADMIN_TOKEN } }
+          {{- end }}
+          readinessProbe: { httpGet: { path: /health, port: admin }, periodSeconds: 5 }
+          livenessProbe: { httpGet: { path: /health, port: admin }, periodSeconds: 15, failureThreshold: 3 }
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities: { drop: [ALL] }
+          volumeMounts:
+            - { name: replays, mountPath: /var/lib/projet-s/replays }
+      volumes:
+        - { name: replays, emptyDir: {} }
+      {{- with .Values.nodeSelector }}
+      nodeSelector: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations: {{ toYaml . | nindent 8 }}
+      {{- end }}

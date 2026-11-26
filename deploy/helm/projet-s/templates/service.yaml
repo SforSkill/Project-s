@@ -1,0 +1,13 @@
+# Game traffic only. The admin port stays inside the cluster (no Service):
+# scrape it from Prometheus through the pod annotations.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-game
+  labels: { app.kubernetes.io/name: projet-s, app.kubernetes.io/instance: {{ .Release.Name }} }
+spec:
+  type: {{ .Values.service.type }}
+  externalTrafficPolicy: Local
+  selector: { app.kubernetes.io/name: projet-s, app.kubernetes.io/instance: {{ .Release.Name }} }
+  ports:
+    - { name: game, port: {{ .Values.service.gamePort }}, targetPort: game, protocol: UDP }
