@@ -180,7 +180,7 @@ fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32) {
             ui.label("Synchronisation verticale");
             ui.checkbox(&mut s.vsync, "");
             ui.end_row();
-            ui.label("Plein écran (fenêtré sans bordure)");
+            ui.label("Plein écran (F11 ou Alt+Entrée)");
             ui.checkbox(&mut s.fullscreen, "");
             ui.end_row();
             ui.label("Graphe réseau");

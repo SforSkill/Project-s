@@ -9,7 +9,7 @@ use bevy::camera::visibility::RenderLayers;
 use bevy::input::mouse::AccumulatedMouseMotion;
 use bevy::light::NotShadowCaster;
 use bevy::prelude::*;
-use bevy::window::{CursorGrabMode, CursorOptions};
+use bevy::window::{CursorGrabMode, CursorOptions, WindowMode};
 use engine_core::cmd::Buttons;
 use engine_core::{PlayerId, Team, ViewAngles};
 use engine_weapons::{GrenadeKind, HitGroup, Slot, WeaponId, WeaponKind};
@@ -252,6 +252,34 @@ pub fn active_weapon(me: &SelfState) -> Option<WeaponId> {
     }
 }
 
+/// Window state seen at the last cursor update.
+#[derive(Default)]
+pub struct GrabState(Option<(bool, WindowMode, UVec2)>);
+
+/// Keeps the cursor captured (hidden, held inside the window) while playing.
+///
+/// Windows drops the cursor clip on Alt+Tab and keeps the old rectangle when
+/// the window changes size or mode, while Bevy only forwards a grab mode that
+/// differs from the last one. After a focus, mode or size change the grab is
+/// therefore released for one frame, then requested again. `Locked` falls back
+/// to `Confined` on Windows, where locking is not supported.
+fn update_cursor_grab(st: &mut GrabState, cursor: &mut CursorOptions, capture: bool, win: &Window) {
+    let now = (win.focused, win.mode, win.physical_size());
+    let changed = st.0 != Some(now);
+    st.0 = Some(now);
+    let grab = if capture && !(changed && cursor.grab_mode != CursorGrabMode::None) {
+        CursorGrabMode::Locked
+    } else {
+        CursorGrabMode::None
+    };
+    if cursor.grab_mode != grab {
+        cursor.grab_mode = grab;
+    }
+    if cursor.visible == capture {
+        cursor.visible = !capture;
+    }
+}
+
 /// Mouse and keyboard to the input timeline (sub-tick timestamps), cursor capture.
 pub fn input(
     screen: Res<Screen>,
@@ -262,7 +290,8 @@ pub fn input(
     mouse: Res<ButtonInput<MouseButton>>,
     motion: Res<AccumulatedMouseMotion>,
     mut net: ResMut<Net>,
-    mut cursor: Single<&mut CursorOptions>,
+    mut window: Single<(&Window, &mut CursorOptions)>,
+    mut grab_state: Local<GrabState>,
     autotest: Option<Res<crate::autotest::AutoTest>>,
 ) {
     if autotest.is_some() {
@@ -271,16 +300,9 @@ pub fn input(
     let now = clock.now();
     let in_game =
         *screen == Screen::Game && net.session.as_ref().is_some_and(|s| s.client.in_game());
-    let capture = in_game && !hud.ui_captures_input();
-    let grab = if capture {
-        CursorGrabMode::Locked
-    } else {
-        CursorGrabMode::None
-    };
-    if cursor.grab_mode != grab {
-        cursor.grab_mode = grab;
-        cursor.visible = !capture;
-    }
+    let (win, cursor) = &mut *window;
+    let capture = in_game && !hud.ui_captures_input() && win.focused;
+    update_cursor_grab(&mut grab_state, cursor, capture, win);
     let Some(s) = &mut net.session else { return };
     if !in_game {
         return;
