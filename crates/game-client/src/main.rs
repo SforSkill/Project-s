@@ -122,6 +122,7 @@ fn main() -> AppExit {
             game::events,
             game::camera,
             game::sync_volume,
+            toggle_fullscreen,
             apply_window_settings,
         )
             .chain()
@@ -130,6 +131,16 @@ fn main() -> AppExit {
     .add_systems(EguiPrimaryContextPass, (ui::hud, ui::menu).chain())
     .add_systems(Last, (limit_frame_rate, shutdown_on_exit))
     .run()
+}
+
+/// F11 or Alt+Enter switches between windowed and fullscreen, and saves it.
+fn toggle_fullscreen(keys: Res<ButtonInput<KeyCode>>, mut s: ResMut<settings::Settings>) {
+    let alt = keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight]);
+    let enter = keys.any_just_pressed([KeyCode::Enter, KeyCode::NumpadEnter]);
+    if keys.just_pressed(KeyCode::F11) || (alt && enter) {
+        s.fullscreen = !s.fullscreen;
+        s.save();
+    }
 }
 
 fn apply_window_settings(s: Res<settings::Settings>, mut window: Single<&mut Window>) {
