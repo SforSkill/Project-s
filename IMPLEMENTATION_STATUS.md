@@ -28,7 +28,7 @@ Les mesures sont dans [`VALIDATION_REPORT.md`](VALIDATION_REPORT.md).
 | Bots | oui | oui | oui | navigation sur grille, visée avec temps de réaction |
 | Deathmatch | oui | oui | oui | |
 | Déploiement Docker | oui | CI | oui | image de 119 Mo, santé et 401 vérifiés |
-| Déploiement systemd | oui | — | non | unité écrite, non démarrée sur une vraie distribution |
+| Déploiement systemd | oui | — | oui | VPS Debian 12, client connecté par Internet |
 
 ## P1 — contenu compétitif
 
@@ -87,8 +87,8 @@ Les mesures sont dans [`VALIDATION_REPORT.md`](VALIDATION_REPORT.md).
 2. Les graphismes sont des primitives géométriques : pas de modèles animés, pas
    d'animation du joueur ni de son arme.
 3. Le client Linux est construit en CI, mais n'a jamais été lancé.
-4. Rien n'a été testé sur Internet avec des humains ni sur un VPS réel. Le
-   réseau n'a été vérifié qu'en local et dans le laboratoire simulé.
+4. Le serveur tourne sur un VPS réel et un client s'y est connecté par Internet,
+   mais aucune partie entre plusieurs humains n'a été jouée.
 5. Le serveur n'est pas authentifié par une clé longue durée, et il n'y a pas
    d'anti-triche client.
 6. Il n'y a pas de liste de serveurs, de matchmaking ni de comptes.

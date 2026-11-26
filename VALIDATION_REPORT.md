@@ -72,6 +72,24 @@ il le rattrape maintenant, avec au plus 8 commandes par frame et un abandon
 seulement au-delà de 32. Les chiffres ci-dessus sont postérieurs à la
 correction.
 
+## 3 bis. VPS réel par Internet
+
+Installation systemd selon `docs/deployment.md` sur un VPS OVH : Debian 12,
+2 vCPU, 2 Go de RAM, déjà occupé par 13 conteneurs, qui sont restés `Up`.
+Configuration : compétitif, équipes complétées par des bots, replays coupés.
+
+| Vérification | Résultat |
+|---|---|
+| `--check`, `systemctl is-active` | OK, `active` |
+| `/health` ; `/status` sans jeton | 200 ; 401 |
+| Mémoire du service | 3,7 Mo au démarrage, 8,7 Mo de RSS avec 10 bots |
+| CPU | environ 13 % d'un cœur avec 10 bots ; tick moyen 92 µs |
+| Client Windows (autotest, 25 s) par Internet vers le VPS | `ok` : 241 FPS, RTT 26,8 ms, gigue 4,1 ms, 3182 snapshots, **0 perdu**, 0 erreur de décodage, 3 corrections, 156 événements urgents, 591 octets par snapshot |
+| Ticks en retard côté serveur | 0 |
+
+Ces chiffres valent pour un seul client humain scripté. Une partie entre
+plusieurs humains n'a toujours pas été jouée.
+
 ## 4. Laboratoire réseau A/B/C/D
 
 60 exécutions : 5 profils × 4 variantes × 3 graines, 30 s chacune. Vrai serveur
@@ -105,9 +123,7 @@ Commandes manquantes après l'échauffement : 0 à 5 par exécution.
 
 - **Client Linux** : construit en CI uniquement, jamais lancé sur une machine
   avec écran.
-- **VPS réel et Internet** : aucun déploiement hors de la machine locale. Le
-  réseau dégradé n'a été mesuré qu'en simulation.
-- **Unité systemd** : écrite, jamais démarrée.
+- **Réseau dégradé réel** : il n'a été mesuré qu'en simulation. Le VPS n'a été testé qu'avec un seul client, sur une bonne connexion.
 - **Helm et Agones** : aucun cluster ; seuls `helm lint` et `helm template` ont
   été exécutés.
 - **Parties avec plusieurs humains** : les essais à deux clients utilisaient
