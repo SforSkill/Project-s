@@ -18,6 +18,7 @@ engine-physics.workspace = true
 engine-movement.workspace = true
 engine-network.workspace = true
 engine-weapons.workspace = true
+engine-hitreg.workspace = true
 game-rules.workspace = true
 game-sim.workspace = true
 game-server.workspace = true

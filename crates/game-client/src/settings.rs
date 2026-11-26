@@ -95,6 +95,8 @@ pub struct Settings {
     pub extrapolation_ms: f32,
     pub last_server: String,
     pub ui_scale: f32,
+    /// Liquid characters: quality and ally/enemy colours.
+    pub characters: crate::character::style::CharacterSettings,
 }
 
 impl Default for Settings {
@@ -121,6 +123,7 @@ impl Default for Settings {
             extrapolation_ms: 15.0,
             last_server: "127.0.0.1:27015".into(),
             ui_scale: 1.0,
+            characters: Default::default(),
         }
     }
 }

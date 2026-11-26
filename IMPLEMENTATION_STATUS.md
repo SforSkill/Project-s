@@ -45,6 +45,7 @@ Les mesures sont dans [`VALIDATION_REPORT.md`](VALIDATION_REPORT.md).
 | MR15, MR12, MR16, prolongations | oui | oui | MR15 : début de partie seulement | aucun match complet de 30 manches joué à la main |
 | Carte compétitive (Citadelle : 2 sites, zones d'achat) | oui | navigation testée | oui | |
 | Viewmodel | oui | — | oui | arme simplifiée (boîtes) |
+| Personnages « peinture liquide » (modèle, animations, shader, effets, palettes, 4 qualités) | oui | tests unitaires + démo `--character-demo --shots` | captures de la démo seulement | voir `docs/characters.md` ; pas encore vu en partie multijoueur réelle |
 | Paramètres (sensibilité, FOV, viewmodel, réticule, son, vidéo) | oui | — | oui | touches modifiables seulement dans `settings.toml` |
 | 5v5 | oui | oui (bots) | oui (1 humain + 9 bots) | jamais avec 10 humains |
 
@@ -84,8 +85,9 @@ Les mesures sont dans [`VALIDATION_REPORT.md`](VALIDATION_REPORT.md).
 ## Limites et travail restant
 
 1. Aucun lecteur de replay, aucun mode spectateur libre hors de la mort.
-2. Les graphismes sont des primitives géométriques : pas de modèles animés, pas
-   d'animation du joueur ni de son arme.
+2. Les cartes sont des primitives géométriques. Les joueurs sont des humanoïdes
+   procéduraux animés (`docs/characters.md`), sans export glTF ni assets
+   Blender.
 3. Le client Linux est construit en CI, mais n'a jamais été lancé.
 4. Le serveur tourne sur un VPS réel et un client s'y est connecté par Internet,
    mais aucune partie entre plusieurs humains n'a été jouée.
