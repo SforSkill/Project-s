@@ -57,6 +57,11 @@ et aller à gauche sur Q.
 | Inspecteur de tirs | F3 |
 | Discussion (tous / équipe) | Y / U |
 | Menu (équipe, paramètres, quitter) | Échap |
+| Plein écran / fenêtré | F11 ou Alt+Entrée |
+
+En partie, le curseur est masqué et retenu dans la fenêtre. Il est libéré quand
+un menu est ouvert (Échap, achat, discussion) ou quand la fenêtre perd le focus
+(Alt+Tab), puis il est capturé de nouveau au retour.
 
 ## Paramètres
 

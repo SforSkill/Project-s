@@ -2,6 +2,8 @@
 //! smokes, fires, bomb, tracers, viewmodel and event effects.
 
 use crate::audio::{Sfx, Sounds};
+use crate::character::anim::Hold;
+use crate::character::{CharEvent, CharState, CharacterFeed, FirstPerson};
 use crate::net::{Clock, Net};
 use crate::settings::{Settings, vertical_fov};
 use crate::world::{MapEntity, SCALE, spawn_map};
@@ -9,7 +11,7 @@ use bevy::camera::visibility::RenderLayers;
 use bevy::input::mouse::AccumulatedMouseMotion;
 use bevy::light::NotShadowCaster;
 use bevy::prelude::*;
-use bevy::window::{CursorGrabMode, CursorOptions};
+use bevy::window::{CursorGrabMode, CursorOptions, WindowMode};
 use engine_core::cmd::Buttons;
 use engine_core::{PlayerId, Team, ViewAngles};
 use engine_weapons::{GrenadeKind, HitGroup, Slot, WeaponId, WeaponKind};
@@ -26,8 +28,6 @@ pub struct MainCam;
 pub struct ViewCam;
 #[derive(Component)]
 pub struct Viewmodel;
-#[derive(Component)]
-pub struct ViewmodelPart;
 
 /// What the screen shows.
 #[derive(Resource, Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -102,7 +102,6 @@ struct SmokeView {
 #[derive(Resource, Default)]
 pub struct Scene {
     pub map: Option<String>,
-    players: HashMap<u8, Entity>,
     grenades: HashMap<u16, Entity>,
     drops: HashMap<u16, Entity>,
     smokes: HashMap<u16, SmokeView>,
@@ -116,10 +115,6 @@ pub struct Scene {
 struct SceneAssets {
     cube: Handle<Mesh>,
     sphere: Handle<Mesh>,
-    attack: Handle<StandardMaterial>,
-    defense: Handle<StandardMaterial>,
-    neutral: Handle<StandardMaterial>,
-    head: Handle<StandardMaterial>,
     smoke: Handle<StandardMaterial>,
     fire: Handle<StandardMaterial>,
     tracer: Handle<StandardMaterial>,
@@ -252,6 +247,34 @@ pub fn active_weapon(me: &SelfState) -> Option<WeaponId> {
     }
 }
 
+/// Window state seen at the last cursor update.
+#[derive(Default)]
+pub struct GrabState(Option<(bool, WindowMode, UVec2)>);
+
+/// Keeps the cursor captured (hidden, held inside the window) while playing.
+///
+/// Windows drops the cursor clip on Alt+Tab and keeps the old rectangle when
+/// the window changes size or mode, while Bevy only forwards a grab mode that
+/// differs from the last one. After a focus, mode or size change the grab is
+/// therefore released for one frame, then requested again. `Locked` falls back
+/// to `Confined` on Windows, where locking is not supported.
+fn update_cursor_grab(st: &mut GrabState, cursor: &mut CursorOptions, capture: bool, win: &Window) {
+    let now = (win.focused, win.mode, win.physical_size());
+    let changed = st.0 != Some(now);
+    st.0 = Some(now);
+    let grab = if capture && !(changed && cursor.grab_mode != CursorGrabMode::None) {
+        CursorGrabMode::Locked
+    } else {
+        CursorGrabMode::None
+    };
+    if cursor.grab_mode != grab {
+        cursor.grab_mode = grab;
+    }
+    if cursor.visible == capture {
+        cursor.visible = !capture;
+    }
+}
+
 /// Mouse and keyboard to the input timeline (sub-tick timestamps), cursor capture.
 pub fn input(
     screen: Res<Screen>,
@@ -262,7 +285,8 @@ pub fn input(
     mouse: Res<ButtonInput<MouseButton>>,
     motion: Res<AccumulatedMouseMotion>,
     mut net: ResMut<Net>,
-    mut cursor: Single<&mut CursorOptions>,
+    mut window: Single<(&Window, &mut CursorOptions)>,
+    mut grab_state: Local<GrabState>,
     autotest: Option<Res<crate::autotest::AutoTest>>,
 ) {
     if autotest.is_some() {
@@ -271,16 +295,9 @@ pub fn input(
     let now = clock.now();
     let in_game =
         *screen == Screen::Game && net.session.as_ref().is_some_and(|s| s.client.in_game());
-    let capture = in_game && !hud.ui_captures_input();
-    let grab = if capture {
-        CursorGrabMode::Locked
-    } else {
-        CursorGrabMode::None
-    };
-    if cursor.grab_mode != grab {
-        cursor.grab_mode = grab;
-        cursor.visible = !capture;
-    }
+    let (win, cursor) = &mut *window;
+    let capture = in_game && !hud.ui_captures_input() && win.focused;
+    update_cursor_grab(&mut grab_state, cursor, capture, win);
     let Some(s) = &mut net.session else { return };
     if !in_game {
         return;
@@ -365,14 +382,6 @@ pub fn input(
     }
 }
 
-fn team_mat(a: &SceneAssets, t: Team) -> Handle<StandardMaterial> {
-    match t {
-        Team::Attack => a.attack.clone(),
-        Team::Defense => a.defense.clone(),
-        Team::Spectator => a.neutral.clone(),
-    }
-}
-
 fn make_assets(meshes: &mut Assets<Mesh>, mats: &mut Assets<StandardMaterial>) -> SceneAssets {
     let m = |mats: &mut Assets<StandardMaterial>, c: Color| {
         mats.add(StandardMaterial {
@@ -384,10 +393,6 @@ fn make_assets(meshes: &mut Assets<Mesh>, mats: &mut Assets<StandardMaterial>) -
     SceneAssets {
         cube: meshes.add(Cuboid::new(1.0, 1.0, 1.0)),
         sphere: meshes.add(Sphere::new(0.5)),
-        attack: m(mats, Color::srgb(0.85, 0.55, 0.15)),
-        defense: m(mats, Color::srgb(0.2, 0.45, 0.9)),
-        neutral: m(mats, Color::srgb(0.8, 0.8, 0.8)),
-        head: m(mats, Color::srgb(0.9, 0.75, 0.6)),
         smoke: mats.add(StandardMaterial {
             base_color: Color::srgb(0.78, 0.79, 0.8),
             perceptual_roughness: 1.0,
@@ -469,9 +474,6 @@ pub fn sync_map(
 }
 
 fn clear_dynamic(commands: &mut Commands, scene: &mut Scene) {
-    for (_, e) in scene.players.drain() {
-        commands.entity(e).despawn();
-    }
     for (_, e) in scene.grenades.drain().chain(scene.drops.drain()) {
         commands.entity(e).despawn();
     }
@@ -493,57 +495,25 @@ fn clear_dynamic(commands: &mut Commands, scene: &mut Scene) {
     }
 }
 
-fn spawn_player_model(commands: &mut Commands, a: &SceneAssets, team: Team) -> Entity {
-    commands
-        .spawn((Transform::default(), Visibility::default()))
-        .with_children(|p| {
-            // Sizes in metres for a standing player (hull 32 × 72 u = 0.81 × 1.83 m);
-            // the parent is squashed vertically when crouching.
-            p.spawn((
-                Mesh3d(a.cube.clone()),
-                MeshMaterial3d(team_mat(a, team)),
-                Transform::from_xyz(0.0, 1.12, 0.0).with_scale(Vec3::new(0.52, 0.62, 0.3)),
-            ));
-            p.spawn((
-                Mesh3d(a.cube.clone()),
-                MeshMaterial3d(team_mat(a, team)),
-                Transform::from_xyz(-0.13, 0.41, 0.0).with_scale(Vec3::new(0.2, 0.82, 0.24)),
-            ));
-            p.spawn((
-                Mesh3d(a.cube.clone()),
-                MeshMaterial3d(team_mat(a, team)),
-                Transform::from_xyz(0.13, 0.41, 0.0).with_scale(Vec3::new(0.2, 0.82, 0.24)),
-            ));
-            p.spawn((
-                Mesh3d(a.sphere.clone()),
-                MeshMaterial3d(a.head.clone()),
-                Transform::from_xyz(0.0, 1.62, 0.0).with_scale(Vec3::splat(0.27)),
-            ));
-            p.spawn((
-                Mesh3d(a.cube.clone()),
-                MeshMaterial3d(a.weapon.clone()),
-                Transform::from_xyz(0.16, 1.3, -0.3).with_scale(Vec3::new(0.05, 0.08, 0.5)),
-            ));
-        })
-        .id()
-}
-
 /// Remote players, grenades, drops, smokes, fires, bomb; expires temporary effects.
 pub fn update_scene(
     mut commands: Commands,
     mut scene: ResMut<Scene>,
     mut net: ResMut<Net>,
     clock: Res<Clock>,
+    mut feed: ResMut<CharacterFeed>,
     mut transforms: Query<(&mut Transform, &mut Visibility), Without<MainCam>>,
 ) {
     let now = clock.now();
+    feed.players.clear();
     let blasts: Vec<(Vec3, f64)> = net
         .session
         .as_mut()
         .map(|s| std::mem::take(&mut s.client.smoke_blasts))
         .unwrap_or_default();
     let Some(s) = &net.session else {
-        if scene.map.is_none() && !scene.players.is_empty() {
+        feed.me = None;
+        if scene.map.is_none() {
             clear_dynamic(&mut commands, &mut scene);
         }
         return;
@@ -552,7 +522,6 @@ pub fn update_scene(
         return;
     };
     let c = &s.client;
-    let mv = &c.data.movement;
     let server_now = c.server_time(now);
     // Players.
     // Never draw the local player, nor the one whose eyes the camera borrows.
@@ -565,40 +534,72 @@ pub fn update_scene(
         .into_iter()
         .filter(|r| Some(r.id) != c.me() && Some(r.id) != spectated)
         .collect();
-    let mut seen = Vec::with_capacity(remotes.len());
-    for r in &remotes {
-        seen.push(r.id);
-        let e = match scene.players.get(&r.id) {
-            Some(e) => *e,
-            None => {
-                let e = spawn_player_model(&mut commands, &a, r.team);
-                scene.players.insert(r.id, e);
-                continue;
-            }
+    let catalog = &c.data.catalog;
+    let hold_of = |w: Option<WeaponId>, flags: u16| {
+        let def = w.and_then(|w| catalog.try_get(w));
+        let hold = if flags & eflags::NO_WEAPON != 0 {
+            Hold::Empty
+        } else if flags & eflags::PLANTING != 0 {
+            Hold::Bomb
+        } else {
+            Hold::from_kind(def.map(|d| d.kind))
         };
-        if let Ok((mut t, mut v)) = transforms.get_mut(e) {
-            let height = mv.hull_height + (mv.duck_hull_height - mv.hull_height) * r.duck;
-            t.translation = r.origin * SCALE;
-            t.rotation = Quat::from_rotation_y(r.yaw.to_radians());
-            t.scale = Vec3::new(1.0, height / mv.hull_height, 1.0);
-            *v = if r.alive() && r.flags & eflags::STALE == 0 {
-                Visibility::Inherited
-            } else {
-                Visibility::Hidden
-            };
-        }
+        (
+            hold,
+            def.map_or(2.5, |d| d.reload_time),
+            def.map_or(1.0, |d| d.deploy_time),
+        )
+    };
+    for r in &remotes {
+        let (hold, reload_time, deploy_time) = hold_of(r.weapon, r.flags);
+        feed.players.push(CharState {
+            id: r.id,
+            origin: r.origin,
+            velocity: r.velocity,
+            yaw: r.yaw,
+            pitch: r.pitch,
+            duck: r.duck,
+            on_ground: r.flags & eflags::ON_GROUND != 0,
+            alive: r.alive(),
+            visible: r.flags & eflags::STALE == 0,
+            working: r.flags & (eflags::PLANTING | eflags::DEFUSING) != 0,
+            reloading: r.flags & eflags::RELOADING != 0,
+            team: r.team,
+            hold,
+            weapon_key: r.weapon.map_or(u16::MAX - 1, |w| w.0 as u16),
+            reload_time,
+            deploy_time,
+            palette: None,
+        });
     }
-    let gone: Vec<u8> = scene
-        .players
-        .keys()
-        .copied()
-        .filter(|id| !seen.contains(id))
-        .collect();
-    for id in gone {
-        if let Some(e) = scene.players.remove(&id) {
-            commands.entity(e).despawn();
+    let me_state = c.latest().and_then(|sn| sn.me.as_ref());
+    feed.viewer = me_state.map_or(Team::Spectator, |m| m.team);
+    feed.free_for_all = c
+        .welcome
+        .as_ref()
+        .is_some_and(|w| w.rules.mode == game_rules::Mode::Deathmatch);
+    feed.me = match (me_state, c.me()) {
+        (Some(m), Some(id)) if m.team != Team::Spectator => {
+            let w = active_weapon(m);
+            let (hold, _, _) = hold_of(w, 0);
+            let yaw = s.timeline.view().yaw;
+            Some(FirstPerson {
+                id,
+                alive: m.alive,
+                team: m.team,
+                hold,
+                weapon_key: w.map_or(u16::MAX - 1, |w| w.0 as u16),
+                reload_left: m
+                    .hand
+                    .reload_until
+                    .map(|t| (t - server_now).max(0.0) as f32),
+                deploy_left: (m.hand.deploy_until - server_now).max(0.0) as f32,
+                velocity: Quat::from_rotation_y(-yaw.to_radians()) * c.mv.velocity,
+                on_ground: c.mv.on_ground,
+            })
         }
-    }
+        _ => None,
+    };
     let Some(snap) = c.latest() else { return };
     // Grenades in flight.
     let mut live = Vec::new();
@@ -912,74 +913,17 @@ pub fn camera(
     }
 }
 
-/// Viewmodel: a simple procedural gun shown on its own render layer.
-pub fn setup_viewmodel(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut mats: ResMut<Assets<StandardMaterial>>,
-    cam: Query<Entity, With<ViewCam>>,
-) {
+/// Viewmodel anchor on its own render layer: `camera` places it, the
+/// liquid arms and their weapon hang from it (`character::runtime`).
+pub fn setup_viewmodel(mut commands: Commands, cam: Query<Entity, With<ViewCam>>) {
     let Ok(cam) = cam.single() else { return };
-    let cube = meshes.add(Cuboid::new(1.0, 1.0, 1.0));
-    let dark = mats.add(StandardMaterial {
-        base_color: Color::srgb(0.1, 0.1, 0.11),
-        perceptual_roughness: 0.5,
-        metallic: 0.6,
-        ..default()
-    });
-    let grip = mats.add(StandardMaterial {
-        base_color: Color::srgb(0.25, 0.2, 0.15),
-        perceptual_roughness: 0.9,
-        ..default()
-    });
-    let hand = mats.add(StandardMaterial {
-        base_color: Color::srgb(0.35, 0.33, 0.3),
-        ..default()
-    });
-    let layer = RenderLayers::layer(VIEWMODEL_LAYER);
     let vm = commands
         .spawn((
             Viewmodel,
             Transform::from_xyz(0.12, -0.12, -0.3),
             Visibility::Hidden,
-            layer.clone(),
+            RenderLayers::layer(VIEWMODEL_LAYER),
         ))
-        .with_children(|p| {
-            p.spawn((
-                ViewmodelPart,
-                Mesh3d(cube.clone()),
-                MeshMaterial3d(dark.clone()),
-                Transform::from_xyz(0.0, 0.0, -0.05).with_scale(Vec3::new(0.022, 0.032, 0.2)),
-                layer.clone(),
-                NotShadowCaster,
-            ));
-            p.spawn((
-                ViewmodelPart,
-                Mesh3d(cube.clone()),
-                MeshMaterial3d(dark.clone()),
-                Transform::from_xyz(0.0, 0.008, -0.2).with_scale(Vec3::new(0.011, 0.011, 0.13)),
-                layer.clone(),
-                NotShadowCaster,
-            ));
-            p.spawn((
-                ViewmodelPart,
-                Mesh3d(cube.clone()),
-                MeshMaterial3d(grip.clone()),
-                Transform::from_xyz(0.0, -0.032, 0.012)
-                    .with_scale(Vec3::new(0.02, 0.05, 0.026))
-                    .with_rotation(Quat::from_rotation_x(-0.3)),
-                layer.clone(),
-                NotShadowCaster,
-            ));
-            p.spawn((
-                ViewmodelPart,
-                Mesh3d(cube.clone()),
-                MeshMaterial3d(hand.clone()),
-                Transform::from_xyz(0.006, -0.045, 0.035).with_scale(Vec3::new(0.04, 0.04, 0.09)),
-                layer.clone(),
-                NotShadowCaster,
-            ));
-        })
         .id();
     commands.entity(cam).add_child(vm);
 }
@@ -998,6 +942,31 @@ fn weapon_name(data: &game_sim::GameData, w: Option<WeaponId>) -> String {
         .unwrap_or_else(|| "monde".into())
 }
 
+/// Cosmetic triggers for the liquid characters (animation and droplets).
+fn forward_character_events(evs: &[GameEvent], feed: &mut CharacterFeed) {
+    for ev in evs {
+        let e = match ev {
+            GameEvent::Shot { shooter, .. } => (shooter.0, CharEvent::Fire),
+            GameEvent::Damage {
+                victim,
+                group,
+                from,
+                ..
+            } => (
+                victim.0,
+                CharEvent::Hit {
+                    from: *from,
+                    head: *group == Some(HitGroup::Head),
+                },
+            ),
+            GameEvent::Footstep { player, .. } => (player.0, CharEvent::Footstep),
+            GameEvent::Land { player, .. } => (player.0, CharEvent::Land),
+            _ => continue,
+        };
+        feed.events.push(e);
+    }
+}
+
 /// Game events to sounds, HUD feedback and short-lived visual effects.
 pub fn events(
     mut commands: Commands,
@@ -1005,11 +974,14 @@ pub fn events(
     clock: Res<Clock>,
     mut hud: ResMut<Hud>,
     mut scene: ResMut<Scene>,
+    mut feed: ResMut<CharacterFeed>,
     sounds: Option<Res<Sounds>>,
 ) {
     let now = clock.now();
+    feed.eye = hud.eye * SCALE;
     let Some(s) = &mut net.session else { return };
     let evs = s.client.take_events();
+    forward_character_events(&evs, &mut feed);
     let notices: Vec<String> = std::mem::take(&mut s.client.notices);
     for n in notices {
         hud.notice(n, now);
