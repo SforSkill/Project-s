@@ -22,7 +22,7 @@ Ce dépôt ne documente que le client. Le reste de Project S est documenté dans
 | Décisions (ADR) | [Project-s-docs `docs/decisions/`](https://github.com/SforSkill/Project-s-docs/blob/main/docs/decisions/) |
 | Branches, PR, releases | [Project-s-docs `docs/git-workflow.md`](https://github.com/SforSkill/Project-s-docs/blob/main/docs/git-workflow.md) |
 | Glossaire | [Project-s-docs `docs/glossary.md`](https://github.com/SforSkill/Project-s-docs/blob/main/docs/glossary.md) |
-| Validation : méthode / résultats | [Project-s-docs `docs/validation.md`](https://github.com/SforSkill/Project-s-docs/blob/main/docs/validation.md) / [`docs/validation-report.md`](https://github.com/SforSkill/Project-s-docs/blob/main/docs/validation-report.md) |
+| Validation : méthode / résultats | [Project-s-docs `docs/validation.md`](https://github.com/SforSkill/Project-s-docs/blob/main/docs/validation.md) / [`VALIDATION_REPORT.md`](https://github.com/SforSkill/Project-s-docs/blob/main/VALIDATION_REPORT.md) |
 | Règles de match, économie, bombe | [Project-s-simulation `docs/rules.md`](https://github.com/SforSkill/Project-s-simulation/blob/main/docs/rules.md) |
 | Déplacement | [Project-s-simulation `docs/movement.md`](https://github.com/SforSkill/Project-s-simulation/blob/main/docs/movement.md) |
 | Armes, dégâts, pénétration | [Project-s-simulation `docs/weapons.md`](https://github.com/SforSkill/Project-s-simulation/blob/main/docs/weapons.md) |
@@ -34,4 +34,4 @@ Ce dépôt ne documente que le client. Le reste de Project S est documenté dans
 | Réseau | [Project-s-netcode `docs/network.md`](https://github.com/SforSkill/Project-s-netcode/blob/main/docs/network.md) |
 | Replays, contrats | [Project-s-protocol `docs/replay-format.md`](https://github.com/SforSkill/Project-s-protocol/blob/main/docs/replay-format.md), [`docs/contracts.md`](https://github.com/SforSkill/Project-s-protocol/blob/main/docs/contracts.md) |
 | Serveur dédié : déploiement, sécurité | [Project-s-server `docs/deployment.md`](https://github.com/SforSkill/Project-s-server/blob/main/docs/deployment.md), [`docs/security.md`](https://github.com/SforSkill/Project-s-server/blob/main/docs/security.md) |
-| Laboratoire réseau A/B/C/D | [Project-s-lab](https://github.com/SforSkill/Project-s-lab) |
+| Laboratoire réseau A/B/C/D | Project-s-lab (dépôt privé) |

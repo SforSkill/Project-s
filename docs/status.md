@@ -8,7 +8,7 @@ Les colonnes ne se recouvrent pas :
 - **Validé** : observé en exécution réelle, avec une vraie fenêtre, un vrai GPU,
   un vrai réseau UDP ou un vrai conteneur.
 
-Les mesures sont dans le [rapport de validation](https://github.com/SforSkill/Project-s-docs/blob/main/docs/validation-report.md).
+Les mesures sont dans le [rapport de validation](https://github.com/SforSkill/Project-s-docs/blob/main/VALIDATION_REPORT.md).
 
 ## P0 — cœur jouable
 
@@ -60,8 +60,8 @@ Les mesures sont dans le [rapport de validation](https://github.com/SforSkill/Pr
 | Visibilité prédictive (PIM) | oui | oui | oui | |
 | Extrapolation adaptative bornée | oui | oui | laboratoire | |
 | Inspecteur de tirs (F3) | oui | — | oui | |
-| Laboratoire réseau A/B/C/D, CSV et JSON | oui | — | oui | 60 exécutions réelles, [Project-s-lab](https://github.com/SforSkill/Project-s-lab) |
-| Benchmarks (criterion) | oui | — | oui | [rapport de validation](https://github.com/SforSkill/Project-s-docs/blob/main/docs/validation-report.md) |
+| Laboratoire réseau A/B/C/D, CSV et JSON | oui | — | oui | 60 exécutions réelles, Project-s-lab (dépôt privé) |
+| Benchmarks (criterion) | oui | — | oui | [rapport de validation](https://github.com/SforSkill/Project-s-docs/blob/main/VALIDATION_REPORT.md) |
 | Replays : enregistrement et relecture déterministe | oui | oui | enregistrement : oui | **pas de lecteur dans le client** |
 
 ## P3 — exploitation

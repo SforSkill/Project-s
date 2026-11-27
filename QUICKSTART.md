@@ -20,7 +20,7 @@ tar xzf Project-S-Linux-x64.tar.gz
 ```
 
 Le build Linux du client est produit par la CI, mais il n'a pas été testé sur
-une machine Linux avec écran (voir le [rapport de validation](https://github.com/SforSkill/Project-s-docs/blob/main/docs/validation-report.md)).
+une machine Linux avec écran (voir le [rapport de validation](https://github.com/SforSkill/Project-s-docs/blob/main/VALIDATION_REPORT.md)).
 
 ## Rejoindre un serveur
 

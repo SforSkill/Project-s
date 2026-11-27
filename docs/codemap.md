@@ -27,7 +27,7 @@ Ce dépôt ne contient que le client. La simulation, le contenu, le serveur, le 
 | Autotest | `ps-client/src/autotest.rs` | `docs/client.md` | `docs/results/autotest/` |
 | Archives de release | `tools/package.py`, `.github/workflows/release.yml` | `SCOPE.md` | job `linux` de `release.yml` |
 
-Hors de ce dépôt : valeurs de gameplay et cartes (Project-s-content), règles et simulation (Project-s-simulation), squelette, maillage, animation et shader des personnages (Project-s-engine), serveur dédié (Project-s-server), transport chiffré (Project-s-netcode), laboratoire réseau (Project-s-lab).
+Hors de ce dépôt : valeurs de gameplay et cartes (Project-s-content), règles et simulation (Project-s-simulation), squelette, maillage, animation et shader des personnages (Project-s-engine), serveur dédié (Project-s-server), transport chiffré (Project-s-netcode), laboratoire réseau (Project-s-lab, privé).
 
 ## Fichiers volumineux
 

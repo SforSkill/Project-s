@@ -15,7 +15,7 @@ Chaque archive a un fichier `.sha256`.
 
 **Ce qui est fait et ce qui manque** :
 - `docs/status.md` ;
-- les mesures réelles sont dans le [rapport de validation](https://github.com/SforSkill/Project-s-docs/blob/main/docs/validation-report.md).
+- les mesures réelles sont dans le [rapport de validation](https://github.com/SforSkill/Project-s-docs/blob/main/VALIDATION_REPORT.md).
 
 Version alpha : les exécutables ne sont pas signés. Le jeu n'a pas encore été
 testé avec des joueurs humains sur Internet.
