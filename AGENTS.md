@@ -26,7 +26,7 @@ Rust 1.100 (`rust-toolchain.toml`, édition 2024, MSRV 1.90), workspace Cargo de
 | `crates/game-sim` | Simulation autoritaire (`Sim::step` = un tick), protocole, prédiction, bots, replays |
 | `crates/game-server` | `Server` sans E/S + boucle UDP 128 Hz (`run.rs`) + binaire `projet-s-server` |
 | `crates/game-netclient` | Réseau client sans E/S : prédiction, interpolation, entrées sub-tick |
-| `crates/game-client` | Binaire `Project-S` (Bevy) : rendu, HUD, son, réglages, `--autotest` |
+| `crates/game-client` | Binaire `Project-S` (Bevy) : rendu, HUD, son, réglages, personnages liquides (`character/`, purement cosmétiques), `--autotest`, `--character-demo` |
 | `configs/*.toml` | Toutes les valeurs de gameplay |
 | `maps/*.ron` | Cartes **générées** par `tools/mapgen` |
 | `tools/` | `mapgen`, `netlab` (laboratoire réseau), `package.py` (archives, licences tierces) |
@@ -39,6 +39,7 @@ Détail par fichier et dépendances entre crates : [`docs/codemap.md`](docs/code
 
 - `engine-*` ne dépend jamais de `game-*` ; Bevy reste confiné à `game-client`.
 - Simulation déterministe et sans E/S, partagée serveur/client ([ADR 0001](docs/decisions/0001-rust-bevy.md)) : l'aléa passe par `DetRng`, le temps par `TickRate`/`SimTime`, les E/S restent dans `run.rs` et `game-client`.
+- Personnages (`game-client/src/character/`) purement cosmétiques : ils ne lisent que l'état réseau, n'influencent jamais hitboxes ni réseau ([`docs/characters.md`](docs/characters.md), ADR 0005).
 - La prédiction (`game-sim/src/predict.rs`) suit exactement le chemin de `Sim::run_cmd` : modifier l'un, c'est vérifier l'autre.
 - Valeurs de gameplay dans `configs/`, jamais en dur (exception connue : grenades et fumée, encore dans `GrenadeConfig`/`SmokeConfig`, cf. `docs/grenades.md`). Cartes : modifier `tools/mapgen`, puis `cargo run -p mapgen`, jamais les `.ron` à la main.
 - Changement de `proto.rs`, du format de replay ou de `engine-network` : doc associée (`docs/network.md`, `docs/replay-format.md`) dans la même PR.
