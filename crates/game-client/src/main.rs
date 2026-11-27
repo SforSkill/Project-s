@@ -8,6 +8,8 @@
 
 mod audio;
 mod autotest;
+mod character;
+mod demo;
 mod game;
 mod net;
 mod settings;
@@ -37,6 +39,9 @@ fn main() -> AppExit {
     if args.iter().any(|a| a == "--version") {
         println!("Projet S {}", env!("CARGO_PKG_VERSION"));
         return AppExit::Success;
+    }
+    if args.iter().any(|a| a == "--character-demo") {
+        return demo::run(&args);
     }
     let explicit = args
         .iter()
@@ -94,6 +99,7 @@ fn main() -> AppExit {
         ..default()
     }))
     .add_plugins(EguiPlugin::default())
+    .add_plugins(character::plugin)
     .insert_resource(net::GameDataRes(data))
     .insert_resource(net::Clock(Instant::now()))
     .insert_resource(settings)
@@ -121,7 +127,10 @@ fn main() -> AppExit {
             game::update_scene,
             game::events,
             game::camera,
+            character::runtime::drive,
+            character::fx::update_fx,
             game::sync_volume,
+            toggle_fullscreen,
             apply_window_settings,
         )
             .chain()
@@ -130,6 +139,16 @@ fn main() -> AppExit {
     .add_systems(EguiPrimaryContextPass, (ui::hud, ui::menu).chain())
     .add_systems(Last, (limit_frame_rate, shutdown_on_exit))
     .run()
+}
+
+/// F11 or Alt+Enter switches between windowed and fullscreen, and saves it.
+fn toggle_fullscreen(keys: Res<ButtonInput<KeyCode>>, mut s: ResMut<settings::Settings>) {
+    let alt = keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight]);
+    let enter = keys.any_just_pressed([KeyCode::Enter, KeyCode::NumpadEnter]);
+    if keys.just_pressed(KeyCode::F11) || (alt && enter) {
+        s.fullscreen = !s.fullscreen;
+        s.save();
+    }
 }
 
 fn apply_window_settings(s: Res<settings::Settings>, mut window: Single<&mut Window>) {

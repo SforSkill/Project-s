@@ -1,6 +1,7 @@
 //! egui interface: main menu, HUD, scoreboard, buy menu, chat, settings,
 //! network graph and Shot Inspector.
 
+use crate::character::style::{CharacterSettings, ColorMode, PaletteId, Quality};
 use crate::game::{Hud, Screen, active_weapon};
 use crate::net::{Clock, GameDataRes, LocalGame, Net};
 use crate::settings::{Settings, vertical_fov};
@@ -46,11 +47,24 @@ impl Default for MenuState {
     }
 }
 
-fn team_color(t: Team) -> Color32 {
-    match t {
-        Team::Attack => Color32::from_rgb(235, 160, 60),
-        Team::Defense => Color32::from_rgb(90, 150, 245),
-        Team::Spectator => Color32::from_gray(200),
+/// HUD colours of the teams: the same palettes as the character bodies
+/// (side or ally/enemy colours, as chosen in the settings).
+struct TeamColors<'a> {
+    cs: &'a CharacterSettings,
+    viewer: Team,
+    free_for_all: bool,
+}
+
+impl TeamColors<'_> {
+    fn get(&self, t: Team) -> Color32 {
+        if t == Team::Spectator {
+            return Color32::from_gray(200);
+        }
+        let [r, g, b] = self
+            .cs
+            .palette_in(t, self.viewer, self.free_for_all)
+            .ui_rgb();
+        Color32::from_rgb(r, g, b)
     }
 }
 
@@ -80,6 +94,56 @@ fn mmss(t: f32) -> String {
     }
     let s = t.ceil() as u32;
     format!("{}:{:02}", s / 60, s % 60)
+}
+
+fn palette_combo(ui: &mut egui::Ui, id: &str, v: &mut PaletteId) {
+    egui::ComboBox::from_id_salt(id)
+        .selected_text(v.label())
+        .show_ui(ui, |ui| {
+            for p in PaletteId::ALL {
+                let [r, g, b] = p.ui_rgb();
+                ui.selectable_value(
+                    v,
+                    p,
+                    RichText::new(format!("■ {}", p.label())).color(Color32::from_rgb(r, g, b)),
+                );
+            }
+        });
+}
+
+/// Characters: quality and colours (accessibility). Every quality level
+/// keeps the same silhouette and contour; colours never change hitboxes.
+pub(crate) fn character_settings_ui(ui: &mut egui::Ui, c: &mut CharacterSettings) {
+    ui.label("Qualité des personnages");
+    ui.horizontal(|ui| {
+        for q in Quality::ALL {
+            ui.selectable_value(&mut c.quality, q, q.label());
+        }
+    });
+    ui.end_row();
+    ui.label("Couleurs des joueurs");
+    ui.horizontal(|ui| {
+        ui.selectable_value(&mut c.mode, ColorMode::Sides, "Par camp");
+        ui.selectable_value(&mut c.mode, ColorMode::Relative, "Alliés / ennemis");
+    });
+    ui.end_row();
+    match c.mode {
+        ColorMode::Sides => {
+            ui.label("Défenseurs / attaquants");
+            ui.horizontal(|ui| {
+                palette_combo(ui, "pal_def", &mut c.defense);
+                palette_combo(ui, "pal_att", &mut c.attack);
+            });
+        }
+        ColorMode::Relative => {
+            ui.label("Alliés / ennemis");
+            ui.horizontal(|ui| {
+                palette_combo(ui, "pal_ally", &mut c.allies);
+                palette_combo(ui, "pal_enemy", &mut c.enemies);
+            });
+        }
+    }
+    ui.end_row();
 }
 
 fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32) {
@@ -141,6 +205,7 @@ fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32) {
             ui.label("Afficher l'arme");
             ui.checkbox(&mut s.show_viewmodel, "");
             ui.end_row();
+            character_settings_ui(ui, &mut s.characters);
             ui.label("Volume");
             ui.add(egui::Slider::new(&mut s.volume, 0.0..=1.0));
             ui.end_row();
@@ -180,7 +245,7 @@ fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32) {
             ui.label("Synchronisation verticale");
             ui.checkbox(&mut s.vsync, "");
             ui.end_row();
-            ui.label("Plein écran (fenêtré sans bordure)");
+            ui.label("Plein écran (F11 ou Alt+Entrée)");
             ui.checkbox(&mut s.fullscreen, "");
             ui.end_row();
             ui.label("Graphe réseau");
@@ -502,6 +567,13 @@ pub fn hud(
     };
     let me = snap.me.clone();
     let rules = c.welcome.as_ref().map(|w| w.rules.clone());
+    let tc = TeamColors {
+        cs: &settings.characters,
+        viewer: me.as_ref().map_or(Team::Spectator, |m| m.team),
+        free_for_all: rules
+            .as_ref()
+            .is_some_and(|r| r.mode == game_rules::Mode::Deathmatch),
+    };
     // Flash: fully white, then fading.
     if now < hud.flash_until {
         let a = if now < hud.flash_full_until {
@@ -670,14 +742,14 @@ pub fn hud(
             Align2::RIGHT_TOP,
             &format!("{att_score}"),
             &big,
-            team_color(Team::Attack),
+            tc.get(Team::Attack),
         );
         text(
             top + Vec2::new(70.0, 4.0),
             Align2::LEFT_TOP,
             &format!("{def_score}"),
             &big,
-            team_color(Team::Defense),
+            tc.get(Team::Defense),
         );
         let label = if snap.round == 0 {
             phase.to_string()
@@ -747,7 +819,7 @@ pub fn hud(
                     Align2::LEFT_BOTTOM,
                     "kit",
                     &mid,
-                    team_color(Team::Defense),
+                    tc.get(Team::Defense),
                 );
             }
             if m.bomb {
@@ -756,7 +828,7 @@ pub fn hud(
                     Align2::LEFT_BOTTOM,
                     "BOMBE",
                     &mid,
-                    team_color(Team::Attack),
+                    tc.get(Team::Attack),
                 );
             }
             if let Some(w) = weapon {
@@ -929,7 +1001,7 @@ pub fn hud(
             Align2::RIGHT_TOP,
             &k.victim,
             small.clone(),
-            team_color(k.victim_team),
+            tc.get(k.victim_team),
         );
         let wr = painter.text(
             Pos2::new(vr.min.x - 10.0, y),
@@ -943,7 +1015,7 @@ pub fn hud(
             Align2::RIGHT_TOP,
             &k.killer,
             small.clone(),
-            team_color(k.killer_team),
+            tc.get(k.killer_team),
         );
     }
     // Notices and chat.
@@ -1023,7 +1095,7 @@ pub fn hud(
             .find(|p| p.id == r.id)
             .map(|p| p.name.clone())
             .unwrap_or_default();
-        text(p, Align2::CENTER_BOTTOM, &name, &small, team_color(r.team));
+        text(p, Align2::CENTER_BOTTOM, &name, &small, tc.get(r.team));
     }
     // Scoreboard.
     if hud.scoreboard {
@@ -1058,7 +1130,7 @@ pub fn hud(
                     };
                     ui.label(
                         RichText::new(format!("{}{score}", team_name(team)))
-                            .color(team_color(team))
+                            .color(tc.get(team))
                             .strong(),
                     );
                     egui::Grid::new(format!("sb_{team:?}"))
