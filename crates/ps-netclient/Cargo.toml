@@ -1,0 +1,28 @@
+[package]
+name = "ps-netclient"
+description = "Project S: client networking (prediction, reconciliation, interpolation, adaptive extrapolation)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[dependencies]
+ps-sim-core.workspace = true
+ps-physics.workspace = true
+ps-movement.workspace = true
+ps-transport.workspace = true
+ps-weapons.workspace = true
+ps-rules.workspace = true
+ps-sim.workspace = true
+ps-sim-net.workspace = true
+glam.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+ps-server.workspace = true
+ps-transport = { workspace = true, features = ["linksim"] }
+
+[lints]
+workspace = true
