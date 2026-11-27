@@ -5,8 +5,8 @@ serveur autoritaire à 128 Hz, grenades fumigènes hybrides (volume voxel opaque
 qui réagit aux explosions), mode compétitif 5v5 avec bombe et économie.
 
 **Version : 0.1.0-alpha** — jouable en local contre des bots et en réseau sur un
-serveur dédié. Voir [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) pour
-ce qui est fait et ce qui ne l'est pas, et [`VALIDATION_REPORT.md`](VALIDATION_REPORT.md)
+serveur dédié. Voir [`docs/status.md`](docs/status.md) pour
+ce qui est fait et ce qui ne l'est pas, et [`docs/validation-report.md`](docs/validation-report.md)
 pour les mesures réelles.
 
 - Jouer : [`QUICKSTART.md`](QUICKSTART.md)
@@ -14,6 +14,7 @@ pour les mesures réelles.
 - Architecture : [`docs/architecture.md`](docs/architecture.md)
 - Réseau : [`docs/network.md`](docs/network.md), laboratoire A/B/C/D : [`docs/network-lab.md`](docs/network-lab.md)
 - Sécurité : [`docs/security.md`](docs/security.md)
+- Contribuer : [`CONTRIBUTING.md`](CONTRIBUTING.md) ; carte du code : [`docs/codemap.md`](docs/codemap.md)
 
 ## Construire
 

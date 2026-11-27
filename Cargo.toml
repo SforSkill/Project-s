@@ -24,7 +24,7 @@ edition = "2024"
 rust-version = "1.90"
 license = "LicenseRef-Proprietary"
 publish = false
-repository = "https://github.com/Thaskow/Projet-S"
+repository = "https://github.com/SforSkill/Projet-S"
 
 [workspace.dependencies]
 engine-core = { path = "crates/engine-core" }

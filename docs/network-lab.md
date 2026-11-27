@@ -120,6 +120,6 @@ chiffres ci-dessus sont postérieurs aux corrections.
 ## Limites
 
 - Un seul scénario de mouvement, deux clients, pas de bots : la charge serveur
-  avec 10 joueurs est mesurée ailleurs (`VALIDATION_REPORT.md`).
+  avec 10 joueurs est mesurée ailleurs (`docs/validation-report.md`).
 - Les liens sont simulés (pertes indépendantes, gigue uniforme). Les vraies
   connexions ont des pertes en rafales et des changements de route.

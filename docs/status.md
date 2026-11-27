@@ -6,7 +6,7 @@ Les colonnes ne se recouvrent pas :
 - **Validé** : observé en exécution réelle, avec une vraie fenêtre, un vrai GPU,
   un vrai réseau UDP ou un vrai conteneur.
 
-Les mesures sont dans [`VALIDATION_REPORT.md`](VALIDATION_REPORT.md).
+Les mesures sont dans [`docs/validation-report.md`](validation-report.md).
 
 ## P0 — cœur jouable
 
@@ -59,7 +59,7 @@ Les mesures sont dans [`VALIDATION_REPORT.md`](VALIDATION_REPORT.md).
 | Extrapolation adaptative bornée | oui | oui | laboratoire | |
 | Inspecteur de tirs (F3) | oui | — | oui | |
 | Laboratoire réseau A/B/C/D, CSV et JSON | oui | — | oui | 60 exécutions réelles, `docs/results/netlab/` |
-| Benchmarks (criterion) | oui | — | oui | `VALIDATION_REPORT.md` |
+| Benchmarks (criterion) | oui | — | oui | `docs/validation-report.md` |
 | Replays : enregistrement et relecture déterministe | oui | oui | enregistrement : oui | **pas de lecteur dans le client** |
 
 ## P3 — exploitation

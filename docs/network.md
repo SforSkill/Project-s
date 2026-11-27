@@ -37,7 +37,7 @@
   - deltas par rapport à une base acquittée (une entité identique à la base coûte 1 octet).
 
   Moyenne mesurée : 224 à 231 octets par snapshot en deathmatch avec 5 joueurs
-  visibles, et 415 à 513 octets en compétitif 5v5 (`VALIDATION_REPORT.md`).
+  visibles, et 415 à 513 octets en compétitif 5v5 (`docs/validation-report.md`).
 - Chaque snapshot contient `cmd_buffer` : la différence entre la commande la plus
   récente reçue et le tick simulé. `i16::MIN` signifie qu'aucune commande n'a
   encore été reçue.

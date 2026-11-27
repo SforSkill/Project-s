@@ -20,7 +20,7 @@ tar xzf Project-S-Linux-x64.tar.gz
 ```
 
 Le build Linux du client est produit par la CI, mais il n'a pas été testé sur
-une machine Linux avec écran (voir `VALIDATION_REPORT.md`).
+une machine Linux avec écran (voir `docs/validation-report.md`).
 
 ## Rejoindre un serveur
 
@@ -90,4 +90,4 @@ section `[keys]` de ce fichier (pas encore depuis le menu).
 
 ## Problèmes connus
 
-Voir la section « Limites » de `IMPLEMENTATION_STATUS.md`.
+Voir la section « Limites » de `docs/status.md`.
