@@ -1,12 +1,16 @@
 name: Release
 
-# Builds the alpha archives from a version tag and attaches them directly to a
+# Builds the alpha archives for a release-please tag and attaches them directly to a
 # GitHub pre-release. Assets go straight to the release (no Actions artifacts,
 # whose storage quota is shared by the whole account). A manual run rebuilds the
 # assets of an existing tag: the code is always checked out at that tag.
 on:
-  push:
-    tags: ["v*"]
+  workflow_call:
+    inputs:
+      tag:
+        description: "Tag created by release-please"
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       tag:

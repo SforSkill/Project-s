@@ -2,7 +2,7 @@
 
 Toutes les valeurs ci-dessous viennent d'exécutions réelles faites le
 26/11/2026. Aucune n'est estimée. Les commandes pour les reproduire sont dans
-[`docs/validation.md`](docs/validation.md).
+[`docs/validation.md`](validation.md).
 
 Machine : Windows 11 Pro, Intel Core i5-13600KF, NVIDIA RTX 4060 Ti, Docker
 Desktop (moteur 29.8.2) pour le serveur Linux. Rust 1.100.
@@ -94,7 +94,7 @@ plusieurs humains n'a toujours pas été jouée.
 
 60 exécutions : 5 profils × 4 variantes × 3 graines, 30 s chacune. Vrai serveur
 et vrais clients sur des liens simulés. Tableau complet et analyse :
-[`docs/network-lab.md`](docs/network-lab.md) ; données brutes :
+[`docs/network-lab.md`](network-lab.md) ; données brutes :
 `docs/results/netlab/netlab.csv` et `netlab.json`.
 
 | Profil | p95 erreur de vue A / D (u) | p95 erreur de rembobinage | Rembobinage max A / B,C / D |

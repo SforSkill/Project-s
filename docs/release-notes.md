@@ -13,8 +13,8 @@ Chaque archive a un fichier `.sha256`.
 **Pour commencer** : lire `QUICKSTART.md`, inclus dans chaque archive.
 
 **Ce qui est fait et ce qui manque** :
-- `IMPLEMENTATION_STATUS.md` ;
-- les mesures réelles sont dans `VALIDATION_REPORT.md`.
+- `docs/status.md` ;
+- les mesures réelles sont dans `docs/validation-report.md`.
 
 Version alpha : les exécutables ne sont pas signés. Le jeu n'a pas encore été
 testé avec des joueurs humains sur Internet.

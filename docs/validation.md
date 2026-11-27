@@ -1,6 +1,6 @@
 # Reproduire la validation
 
-Chaque chiffre de `VALIDATION_REPORT.md` vient d'une des commandes ci-dessous.
+Chaque chiffre de `docs/validation-report.md` vient d'une des commandes ci-dessous.
 
 ## Contrôles du code
 
