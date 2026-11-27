@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Builds the Projet S release archives from already compiled binaries.
+"""Builds the Project S client release archives from the compiled binary.
 
-    python tools/package.py windows-client [--bin-dir target/release]
-    python tools/package.py linux-server   [--bin-dir target/release]
-    python tools/package.py linux-client   [--bin-dir target/release]
+    python tools/package.py windows-client --content ../Project-s-content [--bin-dir target/release]
+    python tools/package.py linux-client   --content ../Project-s-content [--bin-dir target/release]
     python tools/package.py third-party    # writes THIRD_PARTY_LICENSES.md only
 
-Archives go to dist/ with a .sha256 file each. The game data (configs/, maps/)
-sits next to the executables, where both binaries look for it first.
+Archives go to dist/ with a .sha256 file each. The content (configs/, maps/,
+manifests/, from Project-s-content at the version of .content-version) sits next
+to the executable, where the client looks for it first. The dedicated server is
+released by Project-s-server.
 """
 import argparse
 import hashlib
@@ -21,31 +22,27 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
-VERSION = "0.1.0-alpha"
+VERSION = (ROOT / "version.txt").read_text(encoding="utf-8").strip()
 
 KINDS = {
     "windows-client": {
         "archive": "Project-S-Windows-x64.zip",
         "dir": "Project-S",
-        "bins": ["Project-S.exe", "projet-s-server.exe"],
-        "packages": ["game-client", "game-server"],
-        "extra": [],
+        "bins": ["Project-S.exe"],
+        "packages": ["ps-client"],
     },
     "linux-client": {
         "archive": "Project-S-Linux-x64.tar.gz",
         "dir": "Project-S",
-        "bins": ["Project-S", "projet-s-server"],
-        "packages": ["game-client", "game-server"],
-        "extra": [],
-    },
-    "linux-server": {
-        "archive": "Project-S-Dedicated-Server-Linux-x64.tar.gz",
-        "dir": "projet-s-server",
-        "bins": ["projet-s-server"],
-        "packages": ["game-server"],
-        "extra": ["deploy/server.example.toml", "deploy/systemd/projet-s-server.service"],
+        "bins": ["Project-S"],
+        "packages": ["ps-client"],
     },
 }
+
+
+def third_party_source(source):
+    """Registry or git crates, except Project S's own repositories."""
+    return source is not None and "github.com/SforSkill/" not in source
 
 
 def third_party(packages, out: Path):
@@ -63,9 +60,9 @@ def third_party(packages, out: Path):
         for d in nodes[i]["deps"]:
             if any(k["kind"] in (None, "build") for k in d["dep_kinds"]):
                 stack.append(d["pkg"])
-    rows = sorted((by_id[i]["name"], by_id[i]["version"], by_id[i].get("license") or "voir le dépôt", by_id[i].get("repository") or "") for i in seen if by_id[i]["source"] is not None)
+    rows = sorted((by_id[i]["name"], by_id[i]["version"], by_id[i].get("license") or "voir le dépôt", by_id[i].get("repository") or "") for i in seen if third_party_source(by_id[i]["source"]))
     lines = [
-        "# Licences tierces — Projet S " + VERSION,
+        "# Licences tierces — Project S client " + VERSION,
         "",
         "Généré par `python tools/package.py third-party` depuis `cargo metadata` "
         f"pour : {', '.join(packages)}. {len(rows)} crates.",
@@ -78,7 +75,7 @@ def third_party(packages, out: Path):
         "Hack (MIT), Noto Emoji (SIL OFL 1.1), emoji-icon-font (SIL OFL 1.1).",
         "",
         "Aucun asset (modèle, texture, son, carte) ne provient d'un jeu existant : la géométrie",
-        "est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.",
+        "est générée par `tools/ps-mapgen` (Project-s-content), les sons sont synthétisés au démarrage.",
         "",
         "| Crate | Version | Licence | Source |",
         "|---|---|---|---|",
@@ -102,9 +99,10 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("kind", choices=[*KINDS, "third-party"])
     ap.add_argument("--bin-dir", default="target/release")
+    ap.add_argument("--content", default="Project-s-content", help="Project-s-content checkout at the pinned version")
     a = ap.parse_args()
     if a.kind == "third-party":
-        print(third_party(["game-client", "game-server"], ROOT / "THIRD_PARTY_LICENSES.md"))
+        print(third_party(["ps-client"], ROOT / "THIRD_PARTY_LICENSES.md"))
         return
     k = KINDS[a.kind]
     bin_dir = (ROOT / a.bin_dir).resolve()
@@ -117,15 +115,15 @@ def main():
         if not src.is_file():
             sys.exit(f"binaire manquant : {src} (compiler d'abord en release)")
         shutil.copy2(src, stage / b)
-    shutil.copytree(ROOT / "configs", stage / "configs", ignore=shutil.ignore_patterns("local*"))
-    shutil.copytree(ROOT / "maps", stage / "maps")
+    content = (ROOT / a.content).resolve()
+    if not (content / "manifests" / "content.toml").is_file():
+        sys.exit(f"contenu introuvable : {content} (cloner Project-s-content à la version de .content-version)")
+    shutil.copytree(content / "configs", stage / "configs", ignore=shutil.ignore_patterns("local*"))
+    shutil.copytree(content / "maps", stage / "maps")
+    shutil.copytree(content / "manifests", stage / "manifests")
     for f in ["README.md", "QUICKSTART.md", "LICENSE"]:
         shutil.copy2(ROOT / f, stage / f)
     third_party(k["packages"], stage / "THIRD_PARTY_LICENSES.md")
-    for f in k["extra"]:
-        dst = stage / f  # keep deploy/... so the docs' paths hold
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ROOT / f, dst)
     (stage / "VERSION").write_text(VERSION + "\n", encoding="utf-8")
     DIST.mkdir(exist_ok=True)
     out = DIST / k["archive"]

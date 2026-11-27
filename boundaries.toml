@@ -1,0 +1,10 @@
+# Game client: no direct database access, and the embedded server without its
+# `admin` feature (axum and prometheus-client only come with it).
+[rules."*"]
+forbid = ["sqlx*", "postgres*", "diesel*", "axum*", "prometheus-client"]
+
+[rules."ps-netclient"]
+internal = ["ps-sim-core", "ps-physics", "ps-movement", "ps-transport", "ps-weapons", "ps-rules", "ps-sim", "ps-sim-net"]
+
+[rules."ps-client"]
+internal = ["ps-netclient", "ps-server", "ps-engine-character", "ps-sim-core", "ps-physics", "ps-movement", "ps-transport", "ps-weapons", "ps-hitreg", "ps-rules", "ps-sim", "ps-sim-net"]
