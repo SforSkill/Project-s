@@ -1,9 +1,0 @@
-target/
-dist/
-replays/
-.git/
-**/*.psr
-.env
-*.pem
-*.key
-docs/results/

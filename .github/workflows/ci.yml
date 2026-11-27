@@ -12,48 +12,11 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  CARGO_TERM_COLOR: always
-  CARGO_INCREMENTAL: 0
-
 jobs:
-  lint:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: System libraries (Bevy client)
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
-      - run: rustup show active-toolchain
-      - uses: Swatinem/rust-cache@v2
-      - run: cargo fmt --all -- --check
-      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
-
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-22.04, windows-latest]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: System libraries (Bevy client)
-        if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
-      - uses: Swatinem/rust-cache@v2
-      # Release profile: the simulation tests (bot matches, net lab) are slow in debug.
-      - run: cargo test --workspace --release --locked
-      - name: Server data check
-        run: cargo run --release --locked -p game-server -- --data . --config deploy/server.example.toml --check
-
-  docker:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v4
-      - run: docker build -f deploy/docker/Dockerfile -t projet-s-server:ci .
-      - name: Health check
-        run: |
-          docker run -d --name ps -p 127.0.0.1:27016:27016 projet-s-server:ci
-          for i in $(seq 1 30); do curl -fs localhost:27016/health && break; sleep 1; done
-          curl -fs localhost:27016/health
-          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:27016/status)" = 401
-          docker rm -f ps
+  rust:
+    uses: SforSkill/Project-s-docs/.github/workflows/rust.yml@v0.1.0
+    with:
+      tools-ref: v0.1.0
+      content: true
+      bevy: true
+      extra: "cargo run --release --locked -p ps-client -- --data \"$PS_CONTENT_DIR\" --check"

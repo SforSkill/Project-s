@@ -1,6 +1,6 @@
-# Licences tierces — Projet S 0.1.0-alpha
+# Licences tierces — Project S client 0.1.0-alpha.1
 
-Généré par `python tools/package.py third-party` depuis `cargo metadata` pour : game-client, game-server. 610 crates.
+Généré par `python tools/package.py third-party` depuis `cargo metadata` pour : ps-client. 583 crates.
 
 Le texte complet de chaque licence est dans le dépôt de la crate (colonne Source)
 et dans `~/.cargo/registry/src/*/<crate>-<version>/`. Les licences MIT et Apache-2.0
@@ -10,7 +10,7 @@ Polices intégrées par egui (`default_fonts`) : Ubuntu-Light (Ubuntu Font Licen
 Hack (MIT), Noto Emoji (SIL OFL 1.1), emoji-icon-font (SIL OFL 1.1).
 
 Aucun asset (modèle, texture, son, carte) ne provient d'un jeu existant : la géométrie
-est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
+est générée par `tools/ps-mapgen` (Project-s-content), les sons sont synthétisés au démarrage.
 
 | Crate | Version | Licence | Source |
 |---|---|---|---|
@@ -56,8 +56,6 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | atomic-waker | 1.1.2 | Apache-2.0 OR MIT | https://github.com/smol-rs/atomic-waker |
 | atomicow | 1.2.0 | MIT OR Apache-2.0 | https://github.com/bevyengine/atomicow |
 | autocfg | 1.5.1 | Apache-2.0 OR MIT | https://github.com/cuviper/autocfg |
-| axum | 0.8.9 | MIT | https://github.com/tokio-rs/axum |
-| axum-core | 0.5.6 | MIT | https://github.com/tokio-rs/axum |
 | base64 | 0.23.1 | MIT OR Apache-2.0 | https://github.com/marshallpierce/rust-base64 |
 | bevy | 0.20.1 | MIT OR Apache-2.0 | https://github.com/bevyengine/bevy |
 | bevy_a11y | 0.20.1 | MIT OR Apache-2.0 | https://github.com/bevyengine/bevy |
@@ -194,7 +192,6 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | downcast-rs | 1.2.1 | MIT/Apache-2.0 | https://github.com/marcianx/downcast-rs |
 | downcast-rs | 2.0.2 | MIT OR Apache-2.0 | https://github.com/marcianx/downcast-rs |
 | dpi | 0.1.2 | Apache-2.0 AND MIT | https://github.com/rust-windowing/winit |
-| dtoa | 1.0.11 | MIT OR Apache-2.0 | https://github.com/dtolnay/dtoa |
 | ecolor | 0.36.2 | MIT OR Apache-2.0 | https://github.com/emilk/egui |
 | egui | 0.36.2 | MIT OR Apache-2.0 | https://github.com/emilk/egui |
 | either | 1.19.0 | MIT OR Apache-2.0 | https://github.com/rayon-rs/either |
@@ -228,7 +225,6 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | foreign-types | 0.5.0 | MIT/Apache-2.0 | https://github.com/sfackler/foreign-types |
 | foreign-types-macros | 0.2.4 | MIT/Apache-2.0 | https://github.com/sfackler/foreign-types |
 | foreign-types-shared | 0.3.1 | MIT/Apache-2.0 | https://github.com/sfackler/foreign-types |
-| form_urlencoded | 1.2.3 | MIT OR Apache-2.0 | https://github.com/servo/rust-url |
 | funty | 2.0.0 | MIT | https://github.com/myrrlyn/funty |
 | futures-channel | 0.3.34 | MIT OR Apache-2.0 | https://github.com/rust-lang/futures-rs |
 | futures-core | 0.3.34 | MIT OR Apache-2.0 | https://github.com/rust-lang/futures-rs |
@@ -259,14 +255,7 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | hkdf | 0.13.0 | MIT OR Apache-2.0 | https://github.com/RustCrypto/KDFs/ |
 | hmac | 0.13.0 | MIT OR Apache-2.0 | https://github.com/RustCrypto/MACs |
 | hound | 3.5.1 | Apache-2.0 | https://github.com/ruuda/hound |
-| http | 1.5.0 | MIT OR Apache-2.0 | https://github.com/hyperium/http |
-| http-body | 1.1.0 | MIT | https://github.com/hyperium/http-body |
-| http-body-util | 0.1.5 | MIT | https://github.com/hyperium/http-body |
-| httparse | 1.10.1 | MIT OR Apache-2.0 | https://github.com/seanmonstar/httparse |
-| httpdate | 1.0.3 | MIT OR Apache-2.0 | https://github.com/pyfisch/httpdate |
 | hybrid-array | 0.4.15 | MIT OR Apache-2.0 | https://github.com/RustCrypto/hybrid-array |
-| hyper | 1.13.0 | MIT | https://github.com/hyperium/hyper |
-| hyper-util | 0.1.21 | MIT | https://github.com/hyperium/hyper-util |
 | icu_collections | 2.4.0 | Unicode-3.0 | https://github.com/unicode-org/icu4x |
 | icu_locale_core | 2.4.0 | Unicode-3.0 | https://github.com/unicode-org/icu4x |
 | icu_locale_fallback | 2.4.0 | Unicode-3.0 | https://github.com/unicode-org/icu4x |
@@ -322,13 +311,10 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | logos-derive | 0.16.1 | MIT OR Apache-2.0 | https://github.com/maciejhirsz/logos |
 | mach2 | 0.5.0 | BSD-2-Clause OR MIT OR Apache-2.0 | https://github.com/JohnTitor/mach2 |
 | matchers | 0.2.0 | MIT | https://github.com/hawkw/matchers |
-| matchit | 0.8.4 | MIT AND BSD-3-Clause | https://github.com/ibraheemdev/matchit |
 | memchr | 2.8.3 | Unlicense OR MIT | https://github.com/BurntSushi/memchr |
 | memmap2 | 0.9.12 | MIT OR Apache-2.0 | https://github.com/RazrFalcon/memmap2-rs |
-| mime | 0.3.18 | MIT OR Apache-2.0 | https://github.com/hyperium/mime |
 | miniz_oxide | 0.8.9 | MIT OR Zlib OR Apache-2.0 | https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide |
 | miniz_oxide | 0.9.1 | MIT OR Zlib OR Apache-2.0 | https://github.com/Frommi/miniz_oxide/tree/master/miniz_oxide |
-| mio | 1.2.5 | MIT | https://github.com/tokio-rs/mio |
 | moxcms | 0.8.1 | BSD-3-Clause OR Apache-2.0 | https://github.com/awxkee/moxcms.git |
 | mutants | 0.0.3 | MIT | https://github.com/sourcefrog/cargo-mutants |
 | naga | 30.0.2 | MIT OR Apache-2.0 | https://github.com/gfx-rs/wgpu |
@@ -411,8 +397,6 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | proc-macro-crate | 3.5.0 | MIT OR Apache-2.0 | https://github.com/bkchr/proc-macro-crate |
 | proc-macro2 | 1.0.107 | MIT OR Apache-2.0 | https://github.com/dtolnay/proc-macro2 |
 | profiling | 1.0.18 | MIT OR Apache-2.0 | https://github.com/aclysma/profiling |
-| prometheus-client | 0.26.0 | Apache-2.0 OR MIT | https://github.com/prometheus/client_rust |
-| prometheus-client-derive-encode | 0.5.1 | Apache-2.0 OR MIT | https://github.com/prometheus/client_rust |
 | pxfm | 0.1.30 | BSD-3-Clause OR Apache-2.0 | https://github.com/awxkee/pxfm |
 | quick-xml | 0.41.0 | MIT | https://github.com/tafia/quick-xml |
 | quote | 1.0.47 | MIT OR Apache-2.0 | https://github.com/dtolnay/quote |
@@ -442,7 +426,6 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | rustix | 1.1.6 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | https://github.com/bytecodealliance/rustix |
 | rustversion | 1.0.23 | MIT OR Apache-2.0 | https://github.com/dtolnay/rustversion |
 | ruzstd | 0.9.1 | MIT | https://github.com/KillingSpark/zstd-rs |
-| ryu | 1.0.23 | Apache-2.0 OR BSL-1.0 | https://github.com/dtolnay/ryu |
 | same-file | 1.0.6 | Unlicense/MIT | https://github.com/BurntSushi/same-file |
 | scoped-tls | 1.0.1 | MIT/Apache-2.0 | https://github.com/alexcrichton/scoped-tls |
 | scopeguard | 1.2.0 | MIT OR Apache-2.0 | https://github.com/bluss/scopeguard |
@@ -454,9 +437,7 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | serde_core | 1.0.229 | MIT OR Apache-2.0 | https://github.com/serde-rs/serde |
 | serde_derive | 1.0.229 | MIT OR Apache-2.0 | https://github.com/serde-rs/serde |
 | serde_json | 1.0.154 | MIT OR Apache-2.0 | https://github.com/serde-rs/json |
-| serde_path_to_error | 0.1.20 | MIT OR Apache-2.0 | https://github.com/dtolnay/path-to-error |
 | serde_spanned | 1.1.3 | MIT OR Apache-2.0 | https://github.com/toml-rs/toml |
-| serde_urlencoded | 0.7.1 | MIT/Apache-2.0 | https://github.com/nox/serde_urlencoded |
 | sha2 | 0.11.2 | MIT OR Apache-2.0 | https://github.com/RustCrypto/hashes |
 | sharded-slab | 0.1.7 | MIT | https://github.com/hawkw/sharded-slab |
 | shlex | 2.0.1 | MIT OR Apache-2.0 | https://github.com/comex/rust-shlex |
@@ -469,7 +450,6 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | smallvec | 1.16.6 | MIT OR Apache-2.0 | https://github.com/smallvec/smallvec |
 | smithay-client-toolkit | 0.19.2 | MIT | https://github.com/smithay/client-toolkit |
 | smol_str | 0.2.2 | MIT OR Apache-2.0 | https://github.com/rust-analyzer/smol_str |
-| socket2 | 0.6.5 | MIT OR Apache-2.0 | https://github.com/rust-lang/socket2 |
 | spin | 0.12.3 | MIT | https://codeberg.org/zesterer/spin |
 | spirv | 0.4.0+sdk-1.4.341.0 | Apache-2.0 | https://github.com/gfx-rs/rspirv |
 | stable_deref_trait | 1.2.1 | MIT OR Apache-2.0 | https://github.com/storyyeller/stable_deref_trait |
@@ -480,7 +460,6 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | swash | 0.2.10 | Apache-2.0 OR MIT | https://github.com/dfrg/swash |
 | syn | 2.0.119 | MIT OR Apache-2.0 | https://github.com/dtolnay/syn |
 | syn | 3.0.10 | MIT OR Apache-2.0 | https://github.com/dtolnay/syn |
-| sync_wrapper | 1.0.2 | Apache-2.0 | https://github.com/Actyx/sync_wrapper |
 | synstructure | 0.14.0 | MIT | https://github.com/mystor/synstructure |
 | sys-locale | 0.3.2 | MIT OR Apache-2.0 | https://github.com/1Password/sys-locale |
 | tap | 1.0.1 | MIT | https://github.com/myrrlyn/tap |
@@ -494,21 +473,16 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | tinystr | 0.8.5 | Unicode-3.0 | https://github.com/unicode-org/icu4x |
 | tinyvec | 1.13.3 | Zlib OR Apache-2.0 OR MIT | https://github.com/Lokathor/tinyvec |
 | tokio | 1.54.1 | MIT | https://github.com/tokio-rs/tokio |
-| tokio-macros | 2.7.2 | MIT | https://github.com/tokio-rs/tokio |
 | toml | 1.2.3+spec-1.1.0 | MIT OR Apache-2.0 | https://github.com/toml-rs/toml |
 | toml_datetime | 1.1.3+spec-1.1.0 | MIT OR Apache-2.0 | https://github.com/toml-rs/toml |
 | toml_edit | 0.25.21+spec-1.1.0 | MIT OR Apache-2.0 | https://github.com/toml-rs/toml |
 | toml_parser | 1.1.7+spec-1.1.0 | MIT OR Apache-2.0 | https://github.com/toml-rs/toml |
 | toml_writer | 1.2.0+spec-1.1.0 | MIT OR Apache-2.0 | https://github.com/toml-rs/toml |
-| tower | 0.5.3 | MIT | https://github.com/tower-rs/tower |
-| tower-layer | 0.3.3 | MIT | https://github.com/tower-rs/tower |
-| tower-service | 0.3.3 | MIT | https://github.com/tower-rs/tower |
 | tracing | 0.1.44 | MIT | https://github.com/tokio-rs/tracing |
 | tracing-attributes | 0.1.31 | MIT | https://github.com/tokio-rs/tracing |
 | tracing-core | 0.1.36 | MIT | https://github.com/tokio-rs/tracing |
 | tracing-log | 0.2.0 | MIT | https://github.com/tokio-rs/tracing |
 | tracing-oslog | 0.3.0 | Zlib | https://github.com/Absolucy/tracing-oslog |
-| tracing-serde | 0.2.0 | MIT | https://github.com/tokio-rs/tracing |
 | tracing-subscriber | 0.3.23 | MIT | https://github.com/tokio-rs/tracing |
 | tracing-wasm | 0.2.1 | MIT OR Apache-2.0 | https://github.com/storyai/tracing-wasm |
 | tree_magic_mini | 3.2.2 | MIT | https://github.com/mbrubeck/tree_magic/ |
@@ -534,7 +508,6 @@ est générée par `tools/mapgen`, les sons sont synthétisés au démarrage.
 | vello_cpu | 0.1.0 | Apache-2.0 OR MIT | https://github.com/linebender/vello |
 | version_check | 0.9.5 | MIT/Apache-2.0 | https://github.com/SergioBenitez/version_check |
 | walkdir | 2.5.1 | Unlicense/MIT | https://github.com/BurntSushi/walkdir |
-| wasi | 0.11.1+wasi-snapshot-preview1 | Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT | https://github.com/bytecodealliance/wasi |
 | wasm-bindgen | 0.2.130 | MIT OR Apache-2.0 | https://github.com/wasm-bindgen/wasm-bindgen |
 | wasm-bindgen-futures | 0.4.80 | MIT OR Apache-2.0 | https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/futures |
 | wasm-bindgen-macro | 0.2.130 | MIT OR Apache-2.0 | https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro |

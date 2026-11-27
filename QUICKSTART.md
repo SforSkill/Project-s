@@ -1,4 +1,4 @@
-# Projet S — démarrage rapide
+# Project S — démarrage rapide
 
 ## Jouer sous Windows
 
@@ -20,7 +20,7 @@ tar xzf Project-S-Linux-x64.tar.gz
 ```
 
 Le build Linux du client est produit par la CI, mais il n'a pas été testé sur
-une machine Linux avec écran (voir `docs/validation-report.md`).
+une machine Linux avec écran (voir le [rapport de validation](https://github.com/SforSkill/Project-s-docs/blob/main/VALIDATION_REPORT.md)).
 
 ## Rejoindre un serveur
 
@@ -38,7 +38,7 @@ cd projet-s-server
 - Ouvrir le port **27015/UDP** dans le pare-feu.
 - L'API d'administration écoute sur `127.0.0.1:27016`.
 - Toutes les options : `./projet-s-server --help`.
-- Docker, systemd et Kubernetes : `docs/deployment.md`.
+- L'archive du serveur dédié est publiée par [Project-s-server](https://github.com/SforSkill/Project-s-server/releases) ; Docker et systemd : [deployment.md](https://github.com/SforSkill/Project-s-server/blob/main/docs/deployment.md).
 
 ## Commandes par défaut
 

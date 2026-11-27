@@ -1,12 +1,14 @@
 # État d'implémentation — v0.1.0-alpha
 
+État du jeu tel qu'il est livré par ce client. Depuis la séparation en dépôts, chaque élément est maintenu par son dépôt responsable ([`README.md`](README.md)) ; ce tableau reste la vue d'ensemble côté joueur.
+
 Les colonnes ne se recouvrent pas :
 - **Implémenté** : le code existe et compile.
 - **Testé** : vérifié par un test automatique, exécuté et réussi.
 - **Validé** : observé en exécution réelle, avec une vraie fenêtre, un vrai GPU,
   un vrai réseau UDP ou un vrai conteneur.
 
-Les mesures sont dans [`docs/validation-report.md`](validation-report.md).
+Les mesures sont dans le [rapport de validation](https://github.com/SforSkill/Project-s-docs/blob/main/VALIDATION_REPORT.md).
 
 ## P0 — cœur jouable
 
@@ -18,7 +20,7 @@ Les mesures sont dans [`docs/validation-report.md`](validation-report.md).
 | Multijoueur UDP chiffré | oui | oui | oui | 2 clients Windows vers serveur Linux (Docker) |
 | Déplacement Source (air strafe, marches, pentes) | oui | oui | oui | |
 | Sensibilité type Source (0,022) | oui | — | oui | pas de test automatique de conversion |
-| Contre-strafe (2 modes) | oui | oui | — | tableau comparatif : `docs/movement.md` |
+| Contre-strafe (2 modes) | oui | oui | — | tableau comparatif : [movement.md](https://github.com/SforSkill/Project-s-simulation/blob/main/docs/movement.md) |
 | Armes : tir, recul fixe, dispersion en mouvement | oui | oui | oui | |
 | Hitreg + compensation de latence bornée | oui | oui | oui | |
 | Santé, mort, réapparition | oui | oui | oui | |
@@ -45,7 +47,7 @@ Les mesures sont dans [`docs/validation-report.md`](validation-report.md).
 | MR15, MR12, MR16, prolongations | oui | oui | MR15 : début de partie seulement | aucun match complet de 30 manches joué à la main |
 | Carte compétitive (Citadelle : 2 sites, zones d'achat) | oui | navigation testée | oui | |
 | Viewmodel | oui | — | oui | arme simplifiée (boîtes) |
-| Personnages « peinture liquide » (modèle, animations, shader, effets, palettes, 4 qualités) | oui | tests unitaires + démo `--character-demo --shots` | captures de la démo seulement | voir `docs/characters.md` ; pas encore vu en partie multijoueur réelle |
+| Personnages « peinture liquide » (modèle, animations, shader, effets, palettes, 4 qualités) | oui | tests unitaires + démo `--character-demo --shots` | captures de la démo seulement | voir [characters.md](https://github.com/SforSkill/Project-s-engine/blob/main/docs/characters.md) ; pas encore vu en partie multijoueur réelle |
 | Paramètres (sensibilité, FOV, viewmodel, réticule, son, vidéo) | oui | — | oui | touches modifiables seulement dans `settings.toml` |
 | 5v5 | oui | oui (bots) | oui (1 humain + 9 bots) | jamais avec 10 humains |
 
@@ -58,8 +60,8 @@ Les mesures sont dans [`docs/validation-report.md`](validation-report.md).
 | Visibilité prédictive (PIM) | oui | oui | oui | |
 | Extrapolation adaptative bornée | oui | oui | laboratoire | |
 | Inspecteur de tirs (F3) | oui | — | oui | |
-| Laboratoire réseau A/B/C/D, CSV et JSON | oui | — | oui | 60 exécutions réelles, `docs/results/netlab/` |
-| Benchmarks (criterion) | oui | — | oui | `docs/validation-report.md` |
+| Laboratoire réseau A/B/C/D, CSV et JSON | oui | — | oui | 60 exécutions réelles, Project-s-lab (dépôt privé) |
+| Benchmarks (criterion) | oui | — | oui | [rapport de validation](https://github.com/SforSkill/Project-s-docs/blob/main/VALIDATION_REPORT.md) |
 | Replays : enregistrement et relecture déterministe | oui | oui | enregistrement : oui | **pas de lecteur dans le client** |
 
 ## P3 — exploitation
@@ -68,11 +70,11 @@ Les mesures sont dans [`docs/validation-report.md`](validation-report.md).
 |---|---|---|---|---|
 | API admin (`/health`, `/metrics`, `/status`, `/command`) | oui | CI (santé, 401) | oui | jeton Bearer, temps constant |
 | Journaux JSON, métriques Prometheus | oui | — | oui | |
-| Sécurité (chiffrement, cookie, autorité serveur) | oui | oui | — | faiblesses connues : `docs/security.md` |
+| Sécurité (chiffrement, cookie, autorité serveur) | oui | oui | — | faiblesses connues : [security.md](https://github.com/SforSkill/Project-s-server/blob/main/docs/security.md) |
 | Helm | squelette | `helm lint`, `helm template` | non | aucun cluster |
 | Agones | manifeste et doc | — | non | SDK non intégré |
 | CI/CD GitHub Actions | oui | — | voir le rapport final | |
-| Documentation | oui | — | — | `docs/` |
+| Documentation | oui | — | — | `docs/` et dépôts responsables |
 
 ## Expérimental
 
@@ -86,7 +88,7 @@ Les mesures sont dans [`docs/validation-report.md`](validation-report.md).
 
 1. Aucun lecteur de replay, aucun mode spectateur libre hors de la mort.
 2. Les cartes sont des primitives géométriques. Les joueurs sont des humanoïdes
-   procéduraux animés (`docs/characters.md`), sans export glTF ni assets
+   procéduraux animés (Project-s-engine), sans export glTF ni assets
    Blender.
 3. Le client Linux est construit en CI, mais n'a jamais été lancé.
 4. Le serveur tourne sur un VPS réel et un client s'y est connecté par Internet,

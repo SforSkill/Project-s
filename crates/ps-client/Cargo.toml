@@ -1,0 +1,48 @@
+[package]
+name = "ps-client"
+description = "Project S: game client (Bevy renderer, egui interface, local listen server)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "Project-S"
+path = "src/main.rs"
+
+[dependencies]
+ps-sim-core.workspace = true
+ps-physics.workspace = true
+ps-movement.workspace = true
+ps-transport.workspace = true
+ps-weapons.workspace = true
+ps-hitreg.workspace = true
+ps-rules.workspace = true
+ps-sim.workspace = true
+ps-sim-net.workspace = true
+ps-server.workspace = true
+ps-netclient.workspace = true
+ps-engine-character.workspace = true
+serde.workspace = true
+toml.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+bevy = { version = "0.20.1", default-features = false, features = [
+    "default_app",
+    "std",
+    "bevy_winit",
+    "multi_threaded",
+    "x11",
+    "wayland",
+    "3d_bevy_render",
+    "bevy_audio",
+    "wav",
+    "png",
+    "tonemapping_luts",
+] }
+bevy_egui = { version = "0.43.1", default-features = false, features = ["render", "default_fonts"] }
+
+[lints]
+workspace = true

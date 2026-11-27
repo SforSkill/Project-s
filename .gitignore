@@ -3,8 +3,9 @@
 /replays
 *.psrp
 .git/ai-logs/
-/benchmarks/results/*.tmp
-/configs/local*.toml
 .env
 *.pem
 *.key
+# Content checkout (CI, release) and local multi-repo patches (never committed).
+/Project-s-content
+/.cargo/config.toml*
