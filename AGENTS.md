@@ -31,16 +31,16 @@ Rust 1.100 (`rust-toolchain.toml`, édition 2024, MSRV 1.90), workspace Cargo de
 | `maps/*.ron` | Cartes **générées** par `tools/mapgen` |
 | `tools/` | `mapgen`, `netlab` (laboratoire réseau), `package.py` (archives, licences tierces) |
 | `deploy/` | Docker, systemd, Helm, Agones, `server.example.toml` |
-| `docs/` | Architecture, réseau, sécurité, ADR (`decisions/`), état (`status.md`), mesures (`validation-report.md`), carte (`codemap.md`) |
+| `docs/` | Index `docs/README.md` ; carte `codemap.md`, glossaire, configuration, règles, réseau, sécurité, ADR (`decisions/`), état (`status.md`), mesures (`validation-report.md`) |
 
-Détail par fichier et dépendances entre crates : [`docs/codemap.md`](docs/codemap.md).
+Détail par fichier et dépendances entre crates : [`docs/codemap.md`](docs/codemap.md) ; vocabulaire (tick, sub-tick, PIM…) : [`docs/glossary.md`](docs/glossary.md).
 
 ## Règles
 
 - `engine-*` ne dépend jamais de `game-*` ; Bevy reste confiné à `game-client`.
 - Simulation déterministe et sans E/S, partagée serveur/client ([ADR 0001](docs/decisions/0001-rust-bevy.md)) : l'aléa passe par `DetRng`, le temps par `TickRate`/`SimTime`, les E/S restent dans `run.rs` et `game-client`.
 - La prédiction (`game-sim/src/predict.rs`) suit exactement le chemin de `Sim::run_cmd` : modifier l'un, c'est vérifier l'autre.
-- Valeurs de gameplay dans `configs/`, jamais en dur. Cartes : modifier `tools/mapgen`, puis `cargo run -p mapgen`, jamais les `.ron` à la main.
+- Valeurs de gameplay dans `configs/`, jamais en dur (exception connue : grenades et fumée, encore dans `GrenadeConfig`/`SmokeConfig`, cf. `docs/grenades.md`). Cartes : modifier `tools/mapgen`, puis `cargo run -p mapgen`, jamais les `.ron` à la main.
 - Changement de `proto.rs`, du format de replay ou de `engine-network` : doc associée (`docs/network.md`, `docs/replay-format.md`) dans la même PR.
 - Une décision qui dure va dans `docs/decisions/` (ADR numérotée).
 - Repo public : aucun secret, adresse ou chemin de serveur.

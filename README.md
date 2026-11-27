@@ -14,7 +14,8 @@ pour les mesures réelles.
 - Architecture : [`docs/architecture.md`](docs/architecture.md)
 - Réseau : [`docs/network.md`](docs/network.md), laboratoire A/B/C/D : [`docs/network-lab.md`](docs/network-lab.md)
 - Sécurité : [`docs/security.md`](docs/security.md)
-- Contribuer : [`CONTRIBUTING.md`](CONTRIBUTING.md) ; carte du code : [`docs/codemap.md`](docs/codemap.md)
+- Toute la documentation : [`docs/README.md`](docs/README.md) ; carte du code : [`docs/codemap.md`](docs/codemap.md)
+- Contribuer : [`CONTRIBUTING.md`](CONTRIBUTING.md) ; historique : [`CHANGELOG.md`](CHANGELOG.md)
 
 ## Construire
 

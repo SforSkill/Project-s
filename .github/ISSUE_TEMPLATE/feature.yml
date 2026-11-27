@@ -1,0 +1,19 @@
+name: Idée ou amélioration
+description: Une fonctionnalité ou un réglage de gameplay à ajouter ou changer.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Besoin
+      description: Le problème à résoudre, côté joueur ou côté serveur.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposition
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives envisagées
