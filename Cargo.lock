@@ -2694,7 +2694,7 @@ dependencies = [
 
 [[package]]
 name = "engine-core"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "glam",
  "ron",
@@ -2705,7 +2705,7 @@ dependencies = [
 
 [[package]]
 name = "engine-hitreg"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "criterion",
  "engine-core",
@@ -2716,7 +2716,7 @@ dependencies = [
 
 [[package]]
 name = "engine-movement"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "criterion",
  "engine-core",
@@ -2727,7 +2727,7 @@ dependencies = [
 
 [[package]]
 name = "engine-network"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "chacha20poly1305",
  "getrandom",
@@ -2739,7 +2739,7 @@ dependencies = [
 
 [[package]]
 name = "engine-physics"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "criterion",
  "engine-core",
@@ -2750,14 +2750,14 @@ dependencies = [
 
 [[package]]
 name = "engine-replay"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "thiserror 2.0.21",
 ]
 
 [[package]]
 name = "engine-visibility"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "engine-core",
  "engine-physics",
@@ -2767,7 +2767,7 @@ dependencies = [
 
 [[package]]
 name = "engine-weapons"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "engine-core",
  "glam",
@@ -3067,7 +3067,7 @@ dependencies = [
 
 [[package]]
 name = "game-client"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "bevy",
  "bevy_egui",
@@ -3089,7 +3089,7 @@ dependencies = [
 
 [[package]]
 name = "game-netclient"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "engine-core",
  "engine-movement",
@@ -3105,7 +3105,7 @@ dependencies = [
 
 [[package]]
 name = "game-rules"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "engine-core",
  "serde",
@@ -3114,7 +3114,7 @@ dependencies = [
 
 [[package]]
 name = "game-server"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "axum",
  "ctrlc",
@@ -3139,7 +3139,7 @@ dependencies = [
 
 [[package]]
 name = "game-sim"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "criterion",
  "engine-core",
@@ -4018,7 +4018,7 @@ dependencies = [
 
 [[package]]
 name = "mapgen"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "engine-core",
  "engine-physics",
@@ -4181,7 +4181,7 @@ dependencies = [
 
 [[package]]
 name = "netlab"
-version = "0.1.0-alpha"
+version = "0.1.0-alpha.1"
 dependencies = [
  "engine-core",
  "engine-network",
