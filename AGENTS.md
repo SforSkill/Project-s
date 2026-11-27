@@ -7,7 +7,7 @@ Repo `SforSkill/Projet-S` : FPS tactique compétitif en Rust. Une simulation aut
 La politique commune des agents s'applique : `Thaskow/.github` → `ai/AGENTS.md` (`gh api repos/Thaskow/.github/contents/ai/AGENTS.md -H "Accept: application/vnd.github.raw"` si `~/.claude/CLAUDE.md` ne la contient pas). L'essentiel :
 
 - **Carte d'abord** : [`docs/codemap.md`](docs/codemap.md) donne le fichier, la doc et les tests de chaque tâche. La lire avant de chercher, puis `rg -n` sur le symbole et lecture de la plage utile.
-- **Jamais dans le contexte** : `Cargo.lock`, `target/`, `maps/*.ron`, `docs/results/`, `THIRD_PARTY_LICENSES.md`. Les gros fichiers (`game-sim/src/sim.rs`, `game-server/src/server.rs`, `game-client/src/ui.rs`, `game.rs`) se lisent par plage.
+- **Jamais dans le contexte** : `Cargo.lock`, `target/`, `maps/*.ron`, `docs/results/`, `THIRD_PARTY_LICENSES.md`, les images de `assets/brand/`. Les gros fichiers (`game-sim/src/sim.rs`, `game-server/src/server.rs`, `game-client/src/ui.rs`, `game.rs`) se lisent par plage.
 - **Sorties courtes** : `cargo build/test/clippy` sont bavards. `python <Thaskow/.github>/tools/ai/quiet.py -- <cmd>` s'il est présent, sinon sortie redirigée hors du repo dont on ne garde que `error`, `FAILED`, `failures:` et la fin. Jamais masquer une erreur.
 - **Tests ciblés** pendant le travail (`cargo test -p <crate>`, `cargo clippy -p <crate>`) ; `-p game-server` compile sans Bevy, donc vite. Workspace complet une fois à la fin.
 - **Mode selon le risque** : FAST (doc, texte, petit bug), STANDARD (fonctionnalité, refactor), DEEP (`engine-network`, `crypto.rs`, `engine-visibility`, `engine-hitreg`, protocole, déploiement, workflows de release).
