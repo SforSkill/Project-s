@@ -15,18 +15,18 @@ Séparation en dépôts : ce dépôt ne garde que le client. Comportement de jeu
 ### Retiré
 - `engine-*`, `game-rules`, `game-sim`, `game-server`, `configs/`, `maps/`, `tools/mapgen`, `deploy/` (dans leurs dépôts respectifs) ; `tools/netlab` et ses résultats (Project-s-lab) ; documentation transversale (Project-s-docs).
 
-## [0.1.0-alpha.1](https://github.com/SforSkill/Projet-S/compare/v0.1.0-alpha...v0.1.0-alpha.1) (2026-11-27)
+## [0.1.0-alpha.1](https://github.com/SforSkill/Project-s/compare/v0.1.0-alpha...v0.1.0-alpha.1) (2026-11-27)
 
 
 ### Features
 
-* **client:** personnages « peinture liquide » à la place des cubes ([48f7ee3](https://github.com/SforSkill/Projet-S/commit/48f7ee3c2732421018f768f5b04aee71b0b558e4))
-* Projet S v0.1.0-alpha ([bc97fe0](https://github.com/SforSkill/Projet-S/commit/bc97fe027085047dee12aa68f284bb53d87f02cd))
+* **client:** personnages « peinture liquide » à la place des cubes ([48f7ee3](https://github.com/SforSkill/Project-s/commit/48f7ee3c2732421018f768f5b04aee71b0b558e4))
+* Projet S v0.1.0-alpha ([bc97fe0](https://github.com/SforSkill/Project-s/commit/bc97fe027085047dee12aa68f284bb53d87f02cd))
 
 
 ### Bug Fixes
 
-* **client:** plein écran F11/Alt+Entrée et capture du curseur fiable ([25aa37c](https://github.com/SforSkill/Projet-S/commit/25aa37c71a0f189185ad0f364771f3e9d28b53e0))
+* **client:** plein écran F11/Alt+Entrée et capture du curseur fiable ([25aa37c](https://github.com/SforSkill/Project-s/commit/25aa37c71a0f189185ad0f364771f3e9d28b53e0))
 
 ## 0.1.0-alpha (2026-11-26)
 
