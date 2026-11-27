@@ -13,7 +13,7 @@ Fichiers dans [`assets/brand/`](../assets/brand/) :
 ## Concept
 
 Le S est un récipient : un tube creux taillé à 45°, comme les personnages low-poly
-([`characters.md`](characters.md)), à moitié rempli de leur peinture liquide. La
+([personnages](https://github.com/SforSkill/Project-s-engine/blob/main/docs/characters.md)), à moitié rempli de leur peinture liquide. La
 surface du liquide est elle-même facettée. Le contenant est exact, le contenu est vivant.
 
 ## Couleurs

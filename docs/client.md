@@ -1,17 +1,17 @@
-# Client (`game-client`)
+# Client (`ps-client`)
 
-Binaire `Project-S` (Bevy 0.20 + egui). Il ne contient aucune règle de jeu : il échantillonne les entrées, les envoie par `game-netclient` et affiche l'état reçu. Jouer seul lance un serveur embarqué (`game_server::spawn_local`) sur 127.0.0.1, avec la même boucle 128 Hz que le serveur dédié. Commandes et réglages côté joueur : [`QUICKSTART.md`](../QUICKSTART.md).
+Binaire `Project-S` (Bevy 0.20 + egui). Il ne contient aucune règle de jeu : il échantillonne les entrées, les envoie par `ps-netclient` et affiche l'état reçu. Jouer seul lance un serveur embarqué (`ps_server::spawn_local`, Project-s-server compilé sans la feature `admin`) sur 127.0.0.1, avec la même boucle 128 Hz que le serveur dédié. Commandes et réglages côté joueur : [`QUICKSTART.md`](../QUICKSTART.md).
 
 ## Options de lancement
 
 | Option | Effet |
 |---|---|
 | `--version` | affiche la version et quitte |
-| `--data <dossier>` | dossier contenant `configs/` et `maps/` |
+| `--data <dossier>` | dossier Project-s-content (`configs/`, `maps/`) ; sinon `PS_CONTENT_DIR`, le dossier de l'exécutable ou un dépôt `Project-s-content` voisin |
 | `--check` | valide les données (nombre de cartes, empreinte) et quitte |
 | `--connect <adresse>` | ouvre le menu « Rejoindre » sur cette adresse |
-| `--character-demo` | scène de test des personnages « peinture liquide » ([`characters.md`](characters.md)) |
-| `--autotest …` | partie locale scriptée avec captures et rapport JSON ([`validation.md`](validation.md)) |
+| `--character-demo` | scène de test des personnages « peinture liquide » ([personnages](#personnages)) |
+| `--autotest …` | partie locale scriptée avec captures et rapport JSON ([autotest](#autotest)) |
 
 ## Ordre d'une image (`main.rs`)
 
@@ -38,7 +38,32 @@ Binaire `Project-S` (Bevy 0.20 + egui). Il ne contient aucune règle de jeu : il
 | `settings.rs` | réglages du joueur (`settings.toml`) : sensibilité, FOV, viewmodel, réticule, touches `[keys]`, son, images, réseau, échelle de l'interface |
 | `audio.rs` | sons procéduraux (aucun asset tiers), spatialisés |
 | `autotest.rs` | test de bout en bout d'un build sur une vraie machine |
-| `character/` | personnages « peinture liquide » : squelette (`rig.rs`), maillage procédural (`mesh.rs`), animation (`anim.rs`), matériau et shader (`liquid.rs`, `liquid.wesl`), effets cosmétiques (`fx.rs`), palettes et qualité (`style.rs`), armes tenues (`weapon_mesh.rs`), branchement ECS (`runtime.rs`, alimenté par `game.rs` via `CharacterFeed`) ; détail : [`characters.md`](characters.md) |
+| `character/` | intégration des personnages `ps-engine-character` : branchement ECS (`runtime.rs`, alimenté par `game.rs` via `CharacterFeed`), couleurs d'équipe (`settings.rs`), arme tenue (`hold_for`), test `hitbox_fit.rs` ; voir [personnages](#personnages) |
 | `demo.rs` | `--character-demo` : scène de test des personnages |
 
 Les touches se changent dans la section `[keys]` de `settings.toml`, pas encore depuis le menu.
+
+## Personnages
+
+Le squelette, le maillage, l'animation, le matériau liquide, les palettes et les effets viennent de `ps-engine-character` ([Project-s-engine `docs/characters.md`](https://github.com/SforSkill/Project-s-engine/blob/main/docs/characters.md) : garanties compétitives, performance, démo, limites). Le client y ajoute :
+
+- `character/runtime.rs` : un personnage par joueur visible, nourri par l'état réseau (`CharacterFeed`) ; bras et arme en première personne sur le viewmodel ;
+- `character/settings.rs` : réglages **Paramètres → Personnages** (qualité, mode de couleur « Par camp » ou « Alliés / ennemis », deux palettes), deux équipes n'ont jamais la même palette ;
+- `character/hitbox_fit.rs` : test qui vérifie que plus de 90 % de la peau reste à moins de 3 unités des hitboxes `ps-hitreg` (debout, accroupi, course, pistolet).
+
+```
+Project-S.exe --character-demo
+Project-S.exe --character-demo --shots <dossier>   # captures + report.json, puis quitte
+```
+
+## Autotest
+
+Partie locale (ou distante avec `--connect`) jouée avec des entrées scriptées sur une vraie fenêtre et un vrai GPU : déplacement, rotation, tir, inspecteur de tirs ; captures d'écran puis `autotest-report.json` (images : nombre, FPS moyen, p50, p99, max ; réseau : snapshots, pertes, RTT, gigue, interpolation, tampon de commandes, corrections, événements urgents, erreurs de décodage ; joueurs distants affichés).
+
+```sh
+target/release/Project-S --autotest --map ps_citadel --mode deathmatch --bots 5 --seconds 25 --out autotest-dm
+target/release/Project-S --autotest --map ps_citadel --mode competitive --bots 9 --seconds 25 --out autotest-comp
+target/release/Project-S --autotest --connect 127.0.0.1:27015 --seconds 25 --out autotest-net
+```
+
+La première exécution après un build compile les shaders : ses temps maximaux sont plus élevés. Résultats de référence : [`results/autotest/`](results/autotest/) ; méthode complète de validation : [Project-s-docs `docs/validation.md`](https://github.com/SforSkill/Project-s-docs/blob/main/docs/validation.md).

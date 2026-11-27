@@ -1,55 +1,42 @@
 <p align="center"><img src="assets/brand/banner.png" alt="Project S — FPS tactique compétitif" width="100%"></p>
 
-# Projet S
+# Project S — client
 
-FPS tactique compétitif en Rust : déplacement de type Source, tir déterministe,
-serveur autoritaire à 128 Hz, grenades fumigènes hybrides (volume voxel opaque
-qui réagit aux explosions), mode compétitif 5v5 avec bombe et économie.
+Client du FPS tactique compétitif [Project S](https://github.com/SforSkill/Project-s-docs), en Rust : rendu Bevy, interface egui, prédiction réseau, personnages « peinture liquide », et serveur local embarqué pour jouer seul contre des bots.
 
-**Alpha** (dernière version : [Releases](https://github.com/SforSkill/Projet-S/releases)) — jouable en local contre des bots et en réseau sur un
-serveur dédié. Voir [`docs/status.md`](docs/status.md) pour
-ce qui est fait et ce qui ne l'est pas, et [`docs/validation-report.md`](docs/validation-report.md)
-pour les mesures réelles.
+**Alpha** (dernière version : [Releases](https://github.com/SforSkill/Project-s/releases)). Ce qui est fait et ce qui ne l'est pas : [`docs/status.md`](docs/status.md).
 
 - Jouer : [`QUICKSTART.md`](QUICKSTART.md)
-- Héberger un serveur : [`docs/deployment.md`](docs/deployment.md)
-- Architecture : [`docs/architecture.md`](docs/architecture.md)
-- Réseau : [`docs/network.md`](docs/network.md), laboratoire A/B/C/D : [`docs/network-lab.md`](docs/network-lab.md)
-- Sécurité : [`docs/security.md`](docs/security.md)
-- Toute la documentation : [`docs/README.md`](docs/README.md) ; carte du code : [`docs/codemap.md`](docs/codemap.md)
+- Client (options, modules, autotest) : [`docs/client.md`](docs/client.md) ; carte du code : [`docs/codemap.md`](docs/codemap.md)
+- Périmètre du dépôt : [`SCOPE.md`](SCOPE.md) ; toute la documentation : [`docs/README.md`](docs/README.md)
+- Architecture d'ensemble : [Project-s-docs](https://github.com/SforSkill/Project-s-docs/blob/main/ARCHITECTURE.md) ; héberger un serveur : [Project-s-server](https://github.com/SforSkill/Project-s-server)
 - Contribuer : [`CONTRIBUTING.md`](CONTRIBUTING.md) ; historique : [`CHANGELOG.md`](CHANGELOG.md)
 
 ## Construire
 
-Rust 1.100 (fixé par `rust-toolchain.toml`).
+Rust 1.100 (fixé par `rust-toolchain.toml`). Le contenu du jeu (configs, cartes) est dans [Project-s-content](https://github.com/SforSkill/Project-s-content), à cloner à côté de ce dépôt à la version de `.content-version` (ou à désigner par `--data` / `PS_CONTENT_DIR`).
 
 ```sh
-cargo build --release -p game-client      # target/release/Project-S(.exe)
-cargo build --release -p game-server      # target/release/projet-s-server(.exe)
-cargo test --workspace --release
-cargo clippy --workspace --all-targets -- -D warnings
+git clone --branch "$(cat .content-version)" https://github.com/SforSkill/Project-s-content ../Project-s-content
+cargo build --release -p ps-client        # target/release/Project-S(.exe)
+cargo test --workspace --all-features --release
+cargo clippy --workspace --all-targets --all-features -- -D warnings
 ```
 
-Linux (client) : `libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev`.
-Le serveur dédié n'a aucune dépendance système et ne compile pas Bevy.
+Linux : `libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev`.
 
 ## Dépôt
 
 | Dossier | Contenu |
 |---|---|
-| `crates/engine-*` | moteur partagé sans rendu : cœur, collisions, déplacement, armes, hitreg, visibilité, réseau chiffré, replays |
-| `crates/game-rules` | règles de match (MR12/15/16, prolongations, économie) |
-| `crates/game-sim` | simulation autoritaire (serveur et prédiction client) |
-| `crates/game-server` | serveur sans E/S + boucle UDP 128 Hz + binaire dédié |
-| `crates/game-netclient` | réseau client sans E/S : prédiction, interpolation, extrapolation |
-| `crates/game-client` | client Bevy + egui (`Project-S`) |
-| `configs/`, `maps/` | données du jeu (TOML, RON générés par `tools/mapgen`) |
-| `tools/mapgen`, `tools/netlab`, `tools/package.py` | générateur de cartes, banc réseau, empaquetage |
-| `deploy/` | Docker, systemd, Helm, Agones |
-| `docs/` | documentation, décisions (ADR), résultats mesurés |
+| `crates/ps-client` | binaire `Project-S` : menus, HUD, réglages, entrées, rendu, son, personnages en jeu, serveur local embarqué |
+| `crates/ps-netclient` | réseau client sans E/S : prédiction, interpolation, extrapolation ; tests de bout en bout client ↔ serveur |
+| `assets/brand/` | logo, icônes, bannière |
+| `tools/package.py` | archives de release (binaire + contenu épinglé + licences tierces) |
+| `docs/` | documentation du client et liens vers les autres dépôts |
+
+Les dépendances Project S (simulation, transport, serveur, moteur) sont épinglées par tag dans `Cargo.toml`. Pour travailler sur plusieurs dépôts à la fois, un `.cargo/config.toml` local (ignoré par git) redirige ces dépendances vers les clones voisins avec `[patch."https://github.com/SforSkill/<dépôt>"]` ; ne jamais commiter un `Cargo.lock` produit avec ces patches.
 
 ## Licence
 
-Code propriétaire, tous droits réservés (voir [`LICENSE`](LICENSE)). Les
-dépendances tierces sont listées dans `THIRD_PARTY_LICENSES.md`. Aucun asset ne
-provient d'un jeu existant.
+Code propriétaire, tous droits réservés (voir [`LICENSE`](LICENSE)). Les dépendances tierces sont listées dans `THIRD_PARTY_LICENSES.md`. Aucun asset ne provient d'un jeu existant.
