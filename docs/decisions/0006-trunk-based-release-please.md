@@ -1,4 +1,4 @@
-# ADR 0005 — Trunk-based et release-please
+# ADR 0006 — Trunk-based et release-please
 
 - **Statut** : accepté
 

@@ -38,6 +38,7 @@ mindmap
         prédiction, interpolation, horloge, InputTimeline
       game-client
         Bevy : rendu, HUD egui, son, réglages, autotest
+        personnages peinture liquide : rig, mesh, anim, shader
     Données
       configs/*.toml
       maps/*.ron générées par mapgen
@@ -93,12 +94,13 @@ Règle : `engine-*` ne dépend jamais de `game-*` ; seul `game-client` dépend d
 | Rendu, caméra, effets | `game-client/src/game.rs`, `world.rs` | `docs/client.md` | `--autotest` (`docs/validation.md`) |
 | Menus, HUD, réglages, raccourcis | `game-client/src/ui.rs`, `settings.rs` | `docs/client.md`, `QUICKSTART.md` | idem |
 | Son | `game-client/src/audio.rs` | `docs/client.md` | — |
+| Personnages, animation, shader liquide | `game-client/src/character/` (`runtime.rs` = entrée, `anim.rs`, `mesh.rs`, `rig.rs`, `liquid.wesl`) | `docs/characters.md`, ADR 0005 | `--character-demo` |
 | Mesures réseau | `tools/netlab/src/main.rs` | `docs/network-lab.md` | — |
 | Archives de release | `tools/package.py`, `.github/workflows/release.yml` | `docs/git-workflow.md` | job `linux` de `release.yml` |
 | Déploiement | `deploy/` | `docs/deployment.md` | job `docker` de la CI |
 
 ## Fichiers volumineux
 
-À lire par plage, jamais en entier : `game-sim/src/sim.rs` (~2 350 lignes), `game-server/src/server.rs` (~1 480), `game-client/src/ui.rs` (~1 280), `game-client/src/game.rs` (~1 270), `game-rules/src/lib.rs`, `game-netclient/src/lib.rs`. Hors contexte : `Cargo.lock`, `maps/*.ron`, `docs/results/`, `THIRD_PARTY_LICENSES.md` (généré par `tools/package.py third-party`).
+À lire par plage, jamais en entier : `game-sim/src/sim.rs` (~2 350 lignes), `game-server/src/server.rs` (~1 480), `game-client/src/ui.rs` (~1 280), `game-client/src/game.rs` (~1 270), `game-client/src/demo.rs`, `character/mesh.rs`, `anim.rs`, `runtime.rs` (800 à 1 000 chacun), `game-rules/src/lib.rs`, `game-netclient/src/lib.rs`. Hors contexte : `Cargo.lock`, `maps/*.ron`, `docs/results/`, `THIRD_PARTY_LICENSES.md` (généré par `tools/package.py third-party`).
 
 Mettre cette carte à jour dans la même PR qu'un ajout ou un déplacement de module.

@@ -14,6 +14,7 @@
 | Bots | [`bots.md`](bots.md) |
 | Cartes | [`maps.md`](maps.md) |
 | Client (Bevy, UI, réglages) | [`client.md`](client.md) |
+| Personnages « peinture liquide » | [`characters.md`](characters.md) |
 | Réseau | [`network.md`](network.md), laboratoire : [`network-lab.md`](network-lab.md) |
 | Replays | [`replay-format.md`](replay-format.md) |
 | Sécurité | [`security.md`](security.md) |
