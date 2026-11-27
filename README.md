@@ -1,10 +1,12 @@
+<p align="center"><img src="assets/brand/banner.png" alt="Project S — FPS tactique compétitif" width="100%"></p>
+
 # Projet S
 
 FPS tactique compétitif en Rust : déplacement de type Source, tir déterministe,
 serveur autoritaire à 128 Hz, grenades fumigènes hybrides (volume voxel opaque
 qui réagit aux explosions), mode compétitif 5v5 avec bombe et économie.
 
-**Version : 0.1.0-alpha** — jouable en local contre des bots et en réseau sur un
+**Alpha** (dernière version : [Releases](https://github.com/SforSkill/Projet-S/releases)) — jouable en local contre des bots et en réseau sur un
 serveur dédié. Voir [`docs/status.md`](docs/status.md) pour
 ce qui est fait et ce qui ne l'est pas, et [`docs/validation-report.md`](docs/validation-report.md)
 pour les mesures réelles.
