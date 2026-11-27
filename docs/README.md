@@ -6,6 +6,7 @@
 | Carte du code (où chercher quoi) | [`codemap.md`](codemap.md) |
 | Architecture, crates, temps | [`architecture.md`](architecture.md) |
 | Glossaire | [`glossary.md`](glossary.md) |
+| Identité visuelle (logo, couleurs, polices) | [`brand.md`](brand.md) |
 | Configuration (tous les fichiers) | [`configuration.md`](configuration.md) |
 | Règles de match, économie, bombe | [`rules.md`](rules.md) |
 | Déplacement | [`movement.md`](movement.md) |
