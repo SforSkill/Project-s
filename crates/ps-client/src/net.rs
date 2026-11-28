@@ -61,13 +61,21 @@ fn client_config(s: &Settings) -> ClientConfig {
 impl Net {
     pub fn connect(&mut self, addr: &str, settings: &Settings, data: Arc<GameData>, now: f64) {
         self.disconnect(now);
+        let addr = match normalize_address(addr) {
+            Ok(a) => a,
+            Err(e) => {
+                self.error = Some(e);
+                return;
+            }
+        };
+        let addr = addr.as_str();
         let server = match addr.to_socket_addrs().ok().and_then(|mut a| {
             a.find(|x| x.is_ipv4())
                 .or_else(|| addr.to_socket_addrs().ok()?.next())
         }) {
             Some(a) => a,
             None => {
-                self.error = Some(format!("adresse invalide : {addr}"));
+                self.error = Some(format!("adresse introuvable : {addr}"));
                 return;
             }
         };
@@ -183,5 +191,86 @@ pub fn send(mut net: ResMut<Net>, clock: Res<Clock>) {
     }
     for p in s.client.poll(now) {
         let _ = s.socket.send_to(&p, s.server);
+    }
+}
+
+/// Port of the dedicated server when the address gives none.
+pub const DEFAULT_PORT: u16 = 27015;
+
+/// Cleans up a typed or pasted server address and checks its form, without any
+/// DNS lookup: drops every whitespace character (stray spaces, line breaks), adds
+/// [`DEFAULT_PORT`] when missing and brackets a bare IPv6 address. Accepts
+/// `1.2.3.4[:port]`, `[v6]:port`, a bare IPv6 address and `host.name[:port]`.
+pub fn normalize_address(raw: &str) -> Result<String, String> {
+    use std::net::IpAddr;
+    let a: String = raw.chars().filter(|c| !c.is_whitespace()).collect();
+    if a.is_empty() {
+        return Err("adresse vide : saisissez hôte:port (ex. 127.0.0.1:27015)".into());
+    }
+    if a.parse::<SocketAddr>().is_ok() {
+        return Ok(a);
+    }
+    if let Ok(ip) = a.parse::<IpAddr>() {
+        return Ok(SocketAddr::new(ip, DEFAULT_PORT).to_string());
+    }
+    let invalid =
+        || format!("adresse invalide : « {a} » (format attendu hôte:port, ex. 192.168.1.10:27015)");
+    let (host, port) = match a.rsplit_once(':') {
+        Some((h, p)) => (
+            h,
+            p.parse::<u16>()
+                .ok()
+                .filter(|p| *p != 0)
+                .ok_or_else(invalid)?,
+        ),
+        None => (a.as_str(), DEFAULT_PORT),
+    };
+    let label_ok = |l: &str| {
+        !l.is_empty()
+            && l.len() <= 63
+            && !l.starts_with('-')
+            && !l.ends_with('-')
+            && l.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
+    };
+    let host = host.strip_suffix('.').unwrap_or(host);
+    if host.len() > 253 || !host.split('.').all(label_ok) {
+        return Err(invalid());
+    }
+    Ok(format!("{host}:{port}"))
+}
+
+#[cfg(test)]
+mod address_tests {
+    use super::normalize_address as n;
+
+    #[test]
+    fn accepts_the_supported_forms() {
+        assert_eq!(n("192.168.1.10:27015").unwrap(), "192.168.1.10:27015");
+        assert_eq!(n("  127.0.0.1:27015\r\n").unwrap(), "127.0.0.1:27015");
+        assert_eq!(
+            n("play.example.com:27015").unwrap(),
+            "play.example.com:27015"
+        );
+        assert_eq!(n("localhost").unwrap(), "localhost:27015");
+        assert_eq!(n("10.0.0.2").unwrap(), "10.0.0.2:27015");
+        assert_eq!(n("[::1]:27016").unwrap(), "[::1]:27016");
+        assert_eq!(n("::1").unwrap(), "[::1]:27015");
+    }
+
+    #[test]
+    fn rejects_malformed_addresses() {
+        for bad in [
+            "",
+            "   ",
+            "host:",
+            "host:0",
+            "host:99999",
+            "a..b:1",
+            "-a.com:1",
+            "bad_host:1",
+            "1.2.3.4:x",
+        ] {
+            assert!(n(bad).is_err(), "{bad:?}");
+        }
     }
 }

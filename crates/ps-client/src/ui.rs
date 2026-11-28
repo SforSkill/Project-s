@@ -544,12 +544,21 @@ pub fn menu(
                         if menu.address.is_empty() {
                             menu.address = settings.last_server.clone();
                         }
+                        let mut enter = false;
                         ui.horizontal(|ui| {
                             ui.label("Adresse (hôte:port)");
-                            ui.text_edit_singleline(&mut menu.address);
+                            let field = ui.add(
+                                egui::TextEdit::singleline(&mut menu.address)
+                                    .hint_text("127.0.0.1:27015")
+                                    .desired_width(260.0),
+                            );
+                            enter =
+                                field.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
                         });
-                        if theme::primary_button(ui, "Se connecter").clicked() {
-                            let a = menu.address.trim().to_string();
+                        if theme::primary_button(ui, "Se connecter").clicked() || enter {
+                            let a = crate::net::normalize_address(&menu.address)
+                                .unwrap_or_else(|_| menu.address.trim().to_string());
+                            menu.address = a.clone();
                             settings.last_server = a.clone();
                             settings.save();
                             net.connect(&a, &settings, data.0.clone(), now);
