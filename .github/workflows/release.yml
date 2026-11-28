@@ -31,7 +31,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ env.TAG }}
       - name: Create the pre-release if missing
@@ -49,13 +49,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ env.TAG }}
       - id: content
         shell: bash
         run: echo "ref=$(tr -d '[:space:]' < .content-version)" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: SforSkill/Project-s-content
           ref: ${{ steps.content.outputs.ref }}
@@ -76,13 +76,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ env.TAG }}
       - id: content
         shell: bash
         run: echo "ref=$(tr -d '[:space:]' < .content-version)" >> "$GITHUB_OUTPUT"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: SforSkill/Project-s-content
           ref: ${{ steps.content.outputs.ref }}
