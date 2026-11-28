@@ -15,6 +15,14 @@ Séparation en dépôts : ce dépôt ne garde que le client. Comportement de jeu
 ### Retiré
 - `engine-*`, `game-rules`, `game-sim`, `game-server`, `configs/`, `maps/`, `tools/mapgen`, `deploy/` (dans leurs dépôts respectifs) ; `tools/netlab` et ses résultats (Project-s-lab) ; documentation transversale (Project-s-docs).
 
+## [0.1.0-alpha.2](https://github.com/SforSkill/Project-s/compare/v0.1.0-alpha.1...v0.1.0-alpha.2) (2026-11-28)
+
+
+### Features
+
+* **client:** textures, ciel, modèles d'armes, sons et charte UI ([#10](https://github.com/SforSkill/Project-s/issues/10)) ([76d58fc](https://github.com/SforSkill/Project-s/commit/76d58fc89920197a8933ff8ab7da147c85d19ad5))
+* **content:** embarque le contenu v0.2.0 ([#14](https://github.com/SforSkill/Project-s/issues/14)) ([35d2bcb](https://github.com/SforSkill/Project-s/commit/35d2bcb7a91d46967dc4f1f53d48f58672903598))
+
 ## [0.1.0-alpha.1](https://github.com/SforSkill/Project-s/compare/v0.1.0-alpha...v0.1.0-alpha.1) (2026-11-27)
 
 
