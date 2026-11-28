@@ -71,6 +71,8 @@ pub struct Hud {
     pub flash_alpha: f32,
     pub round_banner: Option<(String, f64)>,
     pub settings_open: bool,
+    /// Developer console shown (keeps the keyboard and mouse away from the game).
+    pub console_open: bool,
     pub host_cmd: String,
     pub fps: f32,
     pub frame_ms: Vec<f32>,
@@ -82,7 +84,11 @@ pub struct Hud {
 
 impl Hud {
     pub fn ui_captures_input(&self) -> bool {
-        self.escape_menu || self.buy_menu || self.chat_open || self.settings_open
+        self.escape_menu
+            || self.buy_menu
+            || self.chat_open
+            || self.settings_open
+            || self.console_open
     }
 
     pub fn notice(&mut self, text: impl Into<String>, now: f64) {
@@ -256,7 +262,7 @@ pub fn input(
     }
     // Toggles available even with the cursor free. During a key capture in the
     // settings, Escape belongs to the capture (it cancels it).
-    if keys.just_pressed(KeyCode::Escape) && rebind.0.is_none() {
+    if keys.just_pressed(KeyCode::Escape) && rebind.0.is_none() && !hud.console_open {
         if hud.chat_open {
             hud.chat_open = false;
         } else if hud.buy_menu {
@@ -1180,11 +1186,38 @@ pub fn events(
     hud.notices.retain(|(_, t)| now - *t < 6.0);
 }
 
-/// Keeps the sound volume in step with the settings.
+/// Keeps the mixer in step with the settings.
 pub fn sync_volume(settings: Res<Settings>, sounds: Option<ResMut<Sounds>>) {
-    if let Some(mut s) = sounds
-        && (s.volume - settings.volume).abs() > 1e-4
+    if let Some(mut s) = sounds {
+        let mix = settings.mix();
+        if s.mix != mix {
+            s.mix = mix;
+        }
+    }
+}
+
+/// Saves the settings shortly after the audio sliders stop moving (one write
+/// per drag, not one per frame).
+pub fn autosave_audio(
+    settings: Res<Settings>,
+    time: Res<Time>,
+    mut last: Local<Option<crate::audio::Mix>>,
+    mut dirty_since: Local<Option<f32>>,
+) {
+    let mix = settings.mix();
+    let now = time.elapsed_secs();
+    match *last {
+        None => *last = Some(mix),
+        Some(prev) if prev != mix => {
+            *last = Some(mix);
+            *dirty_since = Some(now);
+        }
+        _ => {}
+    }
+    if let Some(t) = *dirty_since
+        && now - t > 0.6
     {
-        s.volume = settings.volume;
+        settings.save();
+        *dirty_since = None;
     }
 }

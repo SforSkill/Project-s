@@ -149,6 +149,41 @@ pub(crate) fn character_settings_ui(ui: &mut egui::Ui, c: &mut CharacterSettings
     ui.end_row();
 }
 
+/// Audio rows of the settings grid (percentages; the curve is applied at playback).
+fn audio_settings_ui(ui: &mut egui::Ui, s: &mut Settings) {
+    let pct = |v: &mut f32, ui: &mut egui::Ui| {
+        ui.add(
+            egui::Slider::new(v, 0.0..=1.0)
+                .custom_formatter(|n, _| format!("{:.0} %", n * 100.0))
+                .custom_parser(|t| {
+                    t.trim()
+                        .trim_end_matches('%')
+                        .trim()
+                        .parse::<f64>()
+                        .ok()
+                        .map(|p| p / 100.0)
+                }),
+        );
+    };
+    ui.label("Volume général");
+    pct(&mut s.master_volume, ui);
+    ui.end_row();
+    ui.label("Volume du jeu (armes, pas, grenades, bombe)");
+    pct(&mut s.game_volume, ui);
+    ui.end_row();
+    ui.label("Volume de l'interface (clics, retours de touche)");
+    pct(&mut s.ui_volume, ui);
+    ui.end_row();
+    ui.label("Son");
+    ui.horizontal(|ui| {
+        ui.checkbox(&mut s.muted, "Couper le son");
+        if ui.button("Réinitialiser l'audio").clicked() {
+            s.reset_audio();
+        }
+    });
+    ui.end_row();
+}
+
 fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32, cap: &mut Capture) {
     egui::Grid::new("settings_grid")
         .num_columns(2)
@@ -206,9 +241,7 @@ fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32, cap: &mut Cap
             ui.checkbox(&mut s.show_viewmodel, "");
             ui.end_row();
             character_settings_ui(ui, &mut s.characters);
-            ui.label("Volume");
-            ui.add(egui::Slider::new(&mut s.volume, 0.0..=1.0));
-            ui.end_row();
+            audio_settings_ui(ui, s);
             ui.label("Réticule : taille / écart / épaisseur");
             ui.horizontal(|ui| {
                 ui.add(
@@ -250,6 +283,9 @@ fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32, cap: &mut Cap
             ui.end_row();
             ui.label("Graphe réseau");
             ui.checkbox(&mut s.net_graph, "");
+            ui.end_row();
+            ui.label("Compteur d'images/s");
+            ui.checkbox(&mut s.show_fps, "");
             ui.end_row();
             ui.label("Variante réseau (labo)");
             ui.horizontal(|ui| {
@@ -441,7 +477,9 @@ pub fn menu(
     let now = clock.now();
     if *screen == Screen::Game && net.session.is_none() {
         *screen = Screen::Menu;
+        let console_open = hud.console_open;
         *hud = Hud::default();
+        hud.console_open = console_open;
     }
     match *screen {
         Screen::Menu => {
@@ -544,12 +582,21 @@ pub fn menu(
                         if menu.address.is_empty() {
                             menu.address = settings.last_server.clone();
                         }
+                        let mut enter = false;
                         ui.horizontal(|ui| {
                             ui.label("Adresse (hôte:port)");
-                            ui.text_edit_singleline(&mut menu.address);
+                            let field = ui.add(
+                                egui::TextEdit::singleline(&mut menu.address)
+                                    .hint_text("127.0.0.1:27015")
+                                    .desired_width(260.0),
+                            );
+                            enter =
+                                field.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
                         });
-                        if theme::primary_button(ui, "Se connecter").clicked() {
-                            let a = menu.address.trim().to_string();
+                        if theme::primary_button(ui, "Se connecter").clicked() || enter {
+                            let a = crate::net::normalize_address(&menu.address)
+                                .unwrap_or_else(|_| menu.address.trim().to_string());
+                            menu.address = a.clone();
                             settings.last_server = a.clone();
                             settings.save();
                             net.connect(&a, &settings, data.0.clone(), now);
@@ -1454,6 +1501,15 @@ pub fn hud(
         }
     }
     let c = &s.client;
+    if settings.show_fps && !settings.net_graph {
+        text(
+            Pos2::new(screen_rect.max.x - 16.0, 12.0),
+            Align2::RIGHT_TOP,
+            &format!("{:.0} i/s", hud.fps),
+            &FontId::monospace(13.0),
+            Color32::from_rgb(200, 255, 200),
+        );
+    }
     // Network graph.
     if settings.net_graph {
         let st = &c.stats;

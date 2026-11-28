@@ -42,7 +42,7 @@ bevy = { version = "0.20.1", default-features = false, features = [
     "png",
     "tonemapping_luts",
 ] }
-bevy_egui = { version = "0.43.1", default-features = false, features = ["render", "default_fonts"] }
+bevy_egui = { version = "0.43.1", default-features = false, features = ["render", "default_fonts", "manage_clipboard"] }
 
 # Labels of the keys on the player's keyboard layout (`keyboard_layout.rs`).
 [target.'cfg(windows)'.dependencies]

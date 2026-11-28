@@ -9,6 +9,7 @@ Ce dépôt ne documente que le client. Le reste de Project S est documenté dans
 | Périmètre du dépôt | [`../SCOPE.md`](../SCOPE.md) |
 | Démarrer, jouer, commandes | [`../QUICKSTART.md`](../QUICKSTART.md) |
 | Client : options, modules, autotest, personnages en jeu | [`client.md`](client.md) |
+| Console développeur : commandes, permissions, fichiers cfg | [`console.md`](console.md) |
 | Carte du code (où chercher quoi) | [`codemap.md`](codemap.md) |
 | Identité visuelle (logo, couleurs, polices) | [`brand.md`](brand.md) |
 | État d'implémentation | [`status.md`](status.md) |
