@@ -67,12 +67,13 @@ un menu est ouvert (Échap, achat, discussion) ou quand la fenêtre perd le focu
 
 Les paramètres sont dans **Échap → Paramètres** :
 - sensibilité, avec m_yaw et m_pitch à 0,022 comme dans les jeux Source (une même valeur donne le même cm/360°) ;
-- FOV ;
 - viewmodel ;
 - réticule ;
 - volume ;
 - limite d'images, V-Sync, plein écran ;
 - graphe réseau et variante réseau.
+
+Le champ de vision est fixe : 84° horizontal en 4:3 (convention CS), il ne se règle pas.
 
 Ils sont enregistrés dans `%APPDATA%\ProjetS\settings.toml` sous Windows, et dans
 `~/.config/ProjetS/settings.toml` sous Linux. Les touches se changent dans la

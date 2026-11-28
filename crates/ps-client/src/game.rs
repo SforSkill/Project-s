@@ -5,7 +5,7 @@ use crate::audio::{Sfx, Sounds};
 use crate::character::anim::Hold;
 use crate::character::{CharEvent, CharState, CharacterFeed, FirstPerson};
 use crate::net::{Clock, Net};
-use crate::settings::{Settings, vertical_fov};
+use crate::settings::{FOV, Settings, vertical_fov};
 use crate::world::{MapEntity, SCALE, spawn_map};
 use bevy::camera::visibility::RenderLayers;
 use bevy::input::mouse::AccumulatedMouseMotion;
@@ -127,6 +127,7 @@ struct SceneAssets {
 pub fn setup_cameras(
     mut commands: Commands,
     mut egui_settings: ResMut<bevy_egui::EguiGlobalSettings>,
+    mut images: ResMut<Assets<Image>>,
 ) {
     egui_settings.auto_create_primary_context = false;
     commands.insert_resource(ClearColor(Color::srgb(0.55, 0.68, 0.85)));
@@ -139,12 +140,13 @@ pub fn setup_cameras(
         MainCam,
         Camera3d::default(),
         Projection::from(PerspectiveProjection {
-            fov: vertical_fov(90.0),
+            fov: vertical_fov(FOV),
             near: 0.02,
             far: 600.0,
             ..default()
         }),
         Transform::from_xyz(0.0, 2.0, 0.0),
+        crate::sky::skybox(&mut images),
         bevy::audio::SpatialListener::new(0.25),
         children![(
             ViewCam,
@@ -436,6 +438,7 @@ pub fn sync_map(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     data: Res<crate::net::GameDataRes>,
+    textures: Res<crate::textures::SurfaceTextures>,
 ) {
     if scene.assets.is_none() {
         scene.assets = Some(make_assets(&mut meshes, &mut materials));
@@ -467,6 +470,7 @@ pub fn sync_map(
                 &mut materials,
                 &level.def,
                 &data.0.materials,
+                &textures,
             );
             scene.map = Some(name);
         }
@@ -842,7 +846,7 @@ pub fn camera(
     let mv_cfg = &c.data.movement;
     let me = c.latest().and_then(|sn| sn.me.as_ref());
     let mut view = s.timeline.view();
-    let mut fov = settings.fov;
+    let mut fov = FOV;
     let mut eye = c.local_origin()
         + Vec3::Y
             * (mv_cfg.eye_height + (mv_cfg.duck_eye_height - mv_cfg.eye_height) * c.local_duck());

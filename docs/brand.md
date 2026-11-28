@@ -5,6 +5,7 @@ Fichiers dans [`assets/brand/`](../assets/brand/) :
 | Fichier | Usage |
 |---|---|
 | `logo.svg` | Monogramme seul (fond transparent) |
+| `logo.png` | `logo.svg` rastérisé en 432×512 (fond transparent), embarqué par le client pour l'écran d'accueil |
 | `icon.svg` | Icône 512 px et plus petite jusqu'à 64 px |
 | `icon-small.svg` | Favicon 32 et 16 px : S plein, sans parois |
 | `banner.png` | En-tête du README (2560×720) |
@@ -40,6 +41,22 @@ Toutes deux sous licence OFL.
 - Un seul niveau de liquide ; facettes à 45° ; une règle de ticks (128 Hz) comme seul ornement ; aplats mats.
 - Pas de néons, halos, dégradés, éclaboussures ni réticule dans le logo.
 - Sous 64 px, utiliser `icon-small.svg` : les parois deviennent illisibles.
+
+## Dans le client
+
+`crates/ps-client/src/theme.rs` applique cette charte à egui : fond Graphite, texte Craie,
+accent Améthyste, données en Acier, angles droits, aucune ombre. Les polices sont dans
+`assets/fonts/` (OFL). L'écran d'accueil a un rail à gauche (monogramme, titre, règle de ticks,
+navigation) ; l'action principale est un bouton Améthyste aux coins coupés à 45°.
+
+Les textures de la carte (`assets/textures/`, sources CC0 dans `SOURCES.md`) suivent la même
+règle d'aplats mats : luminance seule, postérisée, faible contraste, teinte donnée par le matériau.
+Les armes (`assets/weapons/`, CC0 Quaternius) sont des modèles low-poly en couleurs unies,
+ramenées à la palette gris acier mate du moteur ; le ciel (`assets/sky/`, CC0 Poly Haven) est
+adouci et désaturé pour rester calme derrière les aplats.
+
+Régénérer `logo.png` après un changement du SVG : l'ouvrir à 432×512 dans un navigateur
+sans fond (par exemple Edge `--headless --default-background-color=00000000 --screenshot`).
 
 La maquette source (canevas de conception) n'est pas versionnée : régénérer les PNG
 depuis le SVG et ces règles si l'identité change.

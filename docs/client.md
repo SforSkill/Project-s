@@ -22,7 +22,7 @@ Binaire `Project-S` (Bevy 0.20 + egui). Il ne contient aucune règle de jeu : il
 | `Update` / `Input` | entrées, puis autotest | `game.rs`, `autotest.rs` |
 | `Update` / `Send` | envoi des `UserCmd` | `net.rs` |
 | `Update` / `Present` | carte, scène (joueurs, grenades, fumées, feux, bombe, traceurs), personnages et effets liquides, événements, caméra, volume, fenêtre (F11 / Alt+Entrée) | `game.rs`, `world.rs`, `character/` |
-| `EguiPrimaryContextPass` | HUD puis menus | `ui.rs` |
+| `EguiPrimaryContextPass` | thème (deux premières images), HUD puis menus | `theme.rs`, `ui.rs` |
 | `Last` | limite d'images, arrêt propre | `main.rs` |
 
 Écrans : `Screen::Menu` et `Screen::Game`. Ressources principales : `Net` (session et `NetClient`), `Hud`, `Scene`, `Settings`, `MenuState`.
@@ -33,12 +33,15 @@ Binaire `Project-S` (Bevy 0.20 + egui). Il ne contient aucune règle de jeu : il
 |---|---|
 | `net.rs` | connexion à un serveur distant ou embarqué, horloge, envoi/réception |
 | `game.rs` | présentation en jeu : entrées, caméra, joueurs distants, effets, viewmodel |
-| `world.rs` | maillage de la carte (un par matériau), lumières, ciel |
+| `world.rs` | maillage de la carte (un par matériau, UV à l'échelle de la texture), lumières (`SUN_OFFSET`) |
+| `sky.rs` | ciel : cubemap embarquée (`assets/sky/`, CC0 Poly Haven), skybox de la caméra principale |
+| `textures.rs` | textures de surface embarquées (`assets/textures/`, CC0), répétition et mipmaps |
+| `theme.rs` | identité visuelle de l'interface ([`brand.md`](brand.md)) : couleurs, polices, logo, boutons facettés, règle de ticks |
 | `ui.rs` | menu principal, HUD, tableau des scores, achat, discussion, réglages, graphe réseau, inspecteur de tirs (F3) |
-| `settings.rs` | réglages du joueur (`settings.toml`) : sensibilité, FOV, viewmodel, réticule, touches `[keys]`, son, images, réseau, échelle de l'interface |
-| `audio.rs` | sons procéduraux (aucun asset tiers), spatialisés |
+| `settings.rs` | réglages du joueur (`settings.toml`) : sensibilité, viewmodel (FOV du monde fixe : `FOV` = 84°), réticule, touches `[keys]`, son, images, réseau, échelle de l'interface |
+| `audio.rs` | sons procéduraux « liquides » (bulles, gouttes, éclaboussures ; aucun asset tiers), spatialisés, variantes jouées en alternance ; écoute : `cargo test -p ps-client --release audio::tests::export_wavs -- --ignored` → `target/sfx-preview/` |
 | `autotest.rs` | test de bout en bout d'un build sur une vraie machine |
-| `character/` | intégration des personnages `ps-engine-character` : branchement ECS (`runtime.rs`, alimenté par `game.rs` via `CharacterFeed`), couleurs d'équipe (`settings.rs`), arme tenue (`hold_for`), test `hitbox_fit.rs` ; voir [personnages](#personnages) |
+| `character/` | intégration des personnages `ps-engine-character` : branchement ECS (`runtime.rs`, alimenté par `game.rs` via `CharacterFeed`), couleurs d'équipe (`settings.rs`), arme tenue (`hold_for`) et ses modèles CC0 (`weapon_models.rs`, `assets/weapons/`), test `hitbox_fit.rs` ; voir [personnages](#personnages) |
 | `demo.rs` | `--character-demo` : scène de test des personnages |
 
 Les touches se changent dans la section `[keys]` de `settings.toml`, pas encore depuis le menu.

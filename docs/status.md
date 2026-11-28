@@ -48,7 +48,7 @@ Les mesures sont dans le [rapport de validation](https://github.com/SforSkill/Pr
 | Carte compétitive (Citadelle : 2 sites, zones d'achat) | oui | navigation testée | oui | |
 | Viewmodel | oui | — | oui | arme simplifiée (boîtes) |
 | Personnages « peinture liquide » (modèle, animations, shader, effets, palettes, 4 qualités) | oui | tests unitaires + démo `--character-demo --shots` | captures de la démo seulement | voir [characters.md](https://github.com/SforSkill/Project-s-engine/blob/main/docs/characters.md) ; pas encore vu en partie multijoueur réelle |
-| Paramètres (sensibilité, FOV, viewmodel, réticule, son, vidéo) | oui | — | oui | touches modifiables seulement dans `settings.toml` |
+| Paramètres (sensibilité, viewmodel, réticule, son, vidéo) | oui | — | oui | touches modifiables seulement dans `settings.toml` |
 | 5v5 | oui | oui (bots) | oui (1 humain + 9 bots) | jamais avec 10 humains |
 
 ## P2 — fonctions avancées

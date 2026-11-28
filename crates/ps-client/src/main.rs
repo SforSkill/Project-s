@@ -13,6 +13,9 @@ mod demo;
 mod game;
 mod net;
 mod settings;
+mod sky;
+mod textures;
+mod theme;
 mod ui;
 mod world;
 
@@ -112,7 +115,10 @@ fn main() -> AppExit {
     .init_resource::<game::Hud>()
     .init_resource::<game::Scene>()
     .configure_sets(Update, (Stage::Input, Stage::Send, Stage::Present).chain())
-    .add_systems(Startup, (game::setup_cameras, audio::setup))
+    .add_systems(
+        Startup,
+        (game::setup_cameras, audio::setup, textures::setup),
+    )
     .add_systems(PostStartup, game::setup_viewmodel)
     .add_systems(PreUpdate, net::receive)
     .add_systems(
@@ -136,7 +142,10 @@ fn main() -> AppExit {
             .chain()
             .in_set(Stage::Present),
     )
-    .add_systems(EguiPrimaryContextPass, (ui::hud, ui::menu).chain())
+    .add_systems(
+        EguiPrimaryContextPass,
+        (theme::apply, ui::hud, ui::menu).chain(),
+    )
     .add_systems(Last, (limit_frame_rate, shutdown_on_exit))
     .run()
 }

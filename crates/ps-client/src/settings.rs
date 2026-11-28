@@ -77,8 +77,6 @@ pub struct Settings {
     pub invert_y: bool,
     /// Scoped sensitivity multiplier (zoom_sensitivity_ratio).
     pub zoom_sensitivity: f32,
-    /// Horizontal field of view at 4:3 (CS convention), degrees.
-    pub fov: f32,
     pub viewmodel_fov: f32,
     pub viewmodel_offset: [f32; 3],
     pub show_viewmodel: bool,
@@ -108,7 +106,6 @@ impl Default for Settings {
             m_pitch: 0.022,
             invert_y: false,
             zoom_sensitivity: 1.0,
-            fov: 90.0,
             viewmodel_fov: 68.0,
             viewmodel_offset: [2.5, -2.0, -2.0],
             show_viewmodel: true,
@@ -185,6 +182,11 @@ impl Settings {
         counts / dpi * 2.54
     }
 }
+
+/// World field of view: horizontal degrees at 4:3 (CS convention). Fixed for every
+/// player (not a setting) so that the perceived speed is the same for everyone;
+/// an old `fov` key in `settings.toml` is ignored.
+pub const FOV: f32 = 84.0;
 
 /// Vertical FOV (radians) from the CS-style 4:3 horizontal FOV, for an aspect ratio.
 pub fn vertical_fov(hfov_43_deg: f32) -> f32 {
