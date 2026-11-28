@@ -57,6 +57,8 @@ pub struct Keys {
     pub chat: String,
     pub chat_team: String,
     pub inspector: String,
+    /// Developer console: the physical key under Escape by default.
+    pub console: String,
 }
 
 impl Default for Keys {
@@ -86,13 +88,14 @@ impl Default for Keys {
             chat: "Y".into(),
             chat_team: "U".into(),
             inspector: "F3".into(),
+            console: "Backquote".into(),
         }
     }
 }
 
 impl Keys {
     /// Every action with its label in the settings screen, in display order.
-    pub fn entries_mut(&mut self) -> [(&'static str, &mut String); 24] {
+    pub fn entries_mut(&mut self) -> [(&'static str, &mut String); 25] {
         [
             ("Avancer", &mut self.forward),
             ("Reculer", &mut self.back),
@@ -118,6 +121,7 @@ impl Keys {
             ("Chat général", &mut self.chat),
             ("Chat d'équipe", &mut self.chat_team),
             ("Inspecteur de tirs", &mut self.inspector),
+            ("Console développeur", &mut self.console),
         ]
     }
 
@@ -163,6 +167,8 @@ pub struct Settings {
     pub crosshair: Crosshair,
     pub keys: Keys,
     pub net_graph: bool,
+    /// Frame counter in the HUD (`cl_showfps`).
+    pub show_fps: bool,
     /// Network-lab variant (A, B, C, D) used when connecting.
     pub net_variant: String,
     /// Opponent extrapolation horizon in milliseconds (0, 15, 30).
@@ -195,6 +201,7 @@ impl Default for Settings {
             crosshair: Crosshair::default(),
             keys: Keys::default(),
             net_graph: false,
+            show_fps: false,
             net_variant: "C".into(),
             extrapolation_ms: 15.0,
             last_server: "127.0.0.1:27015".into(),

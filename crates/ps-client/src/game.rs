@@ -71,6 +71,8 @@ pub struct Hud {
     pub flash_alpha: f32,
     pub round_banner: Option<(String, f64)>,
     pub settings_open: bool,
+    /// Developer console shown (keeps the keyboard and mouse away from the game).
+    pub console_open: bool,
     pub host_cmd: String,
     pub fps: f32,
     pub frame_ms: Vec<f32>,
@@ -82,7 +84,11 @@ pub struct Hud {
 
 impl Hud {
     pub fn ui_captures_input(&self) -> bool {
-        self.escape_menu || self.buy_menu || self.chat_open || self.settings_open
+        self.escape_menu
+            || self.buy_menu
+            || self.chat_open
+            || self.settings_open
+            || self.console_open
     }
 
     pub fn notice(&mut self, text: impl Into<String>, now: f64) {
@@ -256,7 +262,7 @@ pub fn input(
     }
     // Toggles available even with the cursor free. During a key capture in the
     // settings, Escape belongs to the capture (it cancels it).
-    if keys.just_pressed(KeyCode::Escape) && rebind.0.is_none() {
+    if keys.just_pressed(KeyCode::Escape) && rebind.0.is_none() && !hud.console_open {
         if hud.chat_open {
             hud.chat_open = false;
         } else if hud.buy_menu {

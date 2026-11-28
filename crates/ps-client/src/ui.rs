@@ -284,6 +284,9 @@ fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32, cap: &mut Cap
             ui.label("Graphe réseau");
             ui.checkbox(&mut s.net_graph, "");
             ui.end_row();
+            ui.label("Compteur d'images/s");
+            ui.checkbox(&mut s.show_fps, "");
+            ui.end_row();
             ui.label("Variante réseau (labo)");
             ui.horizontal(|ui| {
                 for v in ["A", "B", "C", "D"] {
@@ -474,7 +477,9 @@ pub fn menu(
     let now = clock.now();
     if *screen == Screen::Game && net.session.is_none() {
         *screen = Screen::Menu;
+        let console_open = hud.console_open;
         *hud = Hud::default();
+        hud.console_open = console_open;
     }
     match *screen {
         Screen::Menu => {
@@ -1496,6 +1501,15 @@ pub fn hud(
         }
     }
     let c = &s.client;
+    if settings.show_fps && !settings.net_graph {
+        text(
+            Pos2::new(screen_rect.max.x - 16.0, 12.0),
+            Align2::RIGHT_TOP,
+            &format!("{:.0} i/s", hud.fps),
+            &FontId::monospace(13.0),
+            Color32::from_rgb(200, 255, 200),
+        );
+    }
     // Network graph.
     if settings.net_graph {
         let st = &c.stats;

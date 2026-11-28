@@ -10,6 +10,7 @@ mod audio;
 mod autotest;
 mod bindings;
 mod character;
+mod console;
 mod demo;
 mod game;
 mod keyboard_layout;
@@ -117,6 +118,7 @@ fn main() -> AppExit {
     .init_resource::<keyboard_layout::KeyLayout>()
     .init_resource::<game::Screen>()
     .init_resource::<game::Hud>()
+    .init_resource::<console::Console>()
     .init_resource::<game::Scene>()
     .configure_sets(Update, (Stage::Input, Stage::Send, Stage::Present).chain())
     .add_systems(
@@ -149,7 +151,7 @@ fn main() -> AppExit {
     )
     .add_systems(
         EguiPrimaryContextPass,
-        (theme::apply, ui::hud, ui::menu).chain(),
+        (theme::apply, ui::hud, ui::menu, console::ui::draw).chain(),
     )
     .add_systems(Last, (limit_frame_rate, shutdown_on_exit))
     .run()
