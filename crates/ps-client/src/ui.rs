@@ -149,6 +149,41 @@ pub(crate) fn character_settings_ui(ui: &mut egui::Ui, c: &mut CharacterSettings
     ui.end_row();
 }
 
+/// Audio rows of the settings grid (percentages; the curve is applied at playback).
+fn audio_settings_ui(ui: &mut egui::Ui, s: &mut Settings) {
+    let pct = |v: &mut f32, ui: &mut egui::Ui| {
+        ui.add(
+            egui::Slider::new(v, 0.0..=1.0)
+                .custom_formatter(|n, _| format!("{:.0} %", n * 100.0))
+                .custom_parser(|t| {
+                    t.trim()
+                        .trim_end_matches('%')
+                        .trim()
+                        .parse::<f64>()
+                        .ok()
+                        .map(|p| p / 100.0)
+                }),
+        );
+    };
+    ui.label("Volume général");
+    pct(&mut s.master_volume, ui);
+    ui.end_row();
+    ui.label("Volume du jeu (armes, pas, grenades, bombe)");
+    pct(&mut s.game_volume, ui);
+    ui.end_row();
+    ui.label("Volume de l'interface (clics, retours de touche)");
+    pct(&mut s.ui_volume, ui);
+    ui.end_row();
+    ui.label("Son");
+    ui.horizontal(|ui| {
+        ui.checkbox(&mut s.muted, "Couper le son");
+        if ui.button("Réinitialiser l'audio").clicked() {
+            s.reset_audio();
+        }
+    });
+    ui.end_row();
+}
+
 fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32, cap: &mut Capture) {
     egui::Grid::new("settings_grid")
         .num_columns(2)
@@ -206,9 +241,7 @@ fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32, cap: &mut Cap
             ui.checkbox(&mut s.show_viewmodel, "");
             ui.end_row();
             character_settings_ui(ui, &mut s.characters);
-            ui.label("Volume");
-            ui.add(egui::Slider::new(&mut s.volume, 0.0..=1.0));
-            ui.end_row();
+            audio_settings_ui(ui, s);
             ui.label("Réticule : taille / écart / épaisseur");
             ui.horizontal(|ui| {
                 ui.add(

@@ -140,6 +140,7 @@ fn main() -> AppExit {
             character::runtime::drive,
             character::fx::update_fx,
             game::sync_volume,
+            game::autosave_audio,
             toggle_fullscreen,
             apply_window_settings,
         )

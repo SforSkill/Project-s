@@ -42,6 +42,56 @@ pub enum Sfx {
     Click,
 }
 
+/// Mixing category. Only these are adjustable by the player: one common volume
+/// for everything that happens in the world (so nobody can mute footsteps or
+/// grenades on their own), one for the interface.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Category {
+    /// Weapons, footsteps, landings, grenades, reload, bomb.
+    Game,
+    /// Clicks and the local hit / kill feedback.
+    Ui,
+}
+
+impl Sfx {
+    pub fn category(self) -> Category {
+        match self {
+            Sfx::Click | Sfx::Beep | Sfx::Hit | Sfx::HitHead | Sfx::Kill => Category::Ui,
+            _ => Category::Game,
+        }
+    }
+}
+
+/// Volume sliders as stored (0..=1, linear in the slider).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Mix {
+    pub master: f32,
+    pub game: f32,
+    pub ui: f32,
+    pub muted: bool,
+}
+
+impl Mix {
+    /// Perceptual curve: the gain is the square of the slider (about -12 dB at
+    /// 50 %), applied to the gain only, never to what is stored.
+    pub fn curve(v: f32) -> f32 {
+        let v = v.clamp(0.0, 1.0);
+        v * v
+    }
+
+    /// Final linear gain for a category (0 when muted).
+    pub fn gain(&self, c: Category) -> f32 {
+        if self.muted {
+            return 0.0;
+        }
+        let cat = match c {
+            Category::Game => self.game,
+            Category::Ui => self.ui,
+        };
+        Self::curve(self.master) * Self::curve(cat)
+    }
+}
+
 const ALL: [Sfx; 18] = [
     Sfx::ShotPistol,
     Sfx::ShotRifle,
@@ -466,7 +516,7 @@ pub struct Sounds {
     handles: Vec<(Sfx, Vec<Handle<AudioSource>>)>,
     /// Round-robin counter over the variants of a sound.
     next: AtomicUsize,
-    pub volume: f32,
+    pub mix: Mix,
 }
 
 pub fn setup(mut commands: Commands, mut assets: ResMut<Assets<AudioSource>>) {
@@ -486,7 +536,12 @@ pub fn setup(mut commands: Commands, mut assets: ResMut<Assets<AudioSource>>) {
     commands.insert_resource(Sounds {
         handles,
         next: AtomicUsize::new(0),
-        volume: 0.6,
+        mix: Mix {
+            master: 0.8,
+            game: 1.0,
+            ui: 1.0,
+            muted: false,
+        },
     });
 }
 
@@ -502,7 +557,7 @@ impl Sounds {
 
     /// Plays `s` at full volume (UI, local player).
     pub fn play(&self, commands: &mut Commands, s: Sfx, gain: f32) {
-        let v = (self.volume * gain).clamp(0.0, 2.0);
+        let v = (self.mix.gain(s.category()) * gain).clamp(0.0, 2.0);
         if v > 0.001
             && let Some(h) = self.handle(s)
         {
@@ -528,7 +583,7 @@ impl Sounds {
             return;
         }
         let att = (1.0 - d / range).powf(1.6);
-        let v = (self.volume * gain * att).clamp(0.0, 2.0);
+        let v = (self.mix.gain(s.category()) * gain * att).clamp(0.0, 2.0);
         if v > 0.001
             && let Some(h) = self.handle(s)
         {
@@ -546,6 +601,29 @@ impl Sounds {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn mix_curve_and_mute() {
+        let m = Mix {
+            master: 0.5,
+            game: 1.0,
+            ui: 0.5,
+            muted: false,
+        };
+        assert!((m.gain(Category::Game) - 0.25).abs() < 1e-6);
+        assert!((m.gain(Category::Ui) - 0.0625).abs() < 1e-6);
+        assert_eq!(Mix { muted: true, ..m }.gain(Category::Game), 0.0);
+        assert_eq!(Mix::curve(2.0), 1.0);
+        assert_eq!(Mix::curve(-1.0), 0.0);
+    }
+
+    #[test]
+    fn categories() {
+        assert_eq!(Sfx::Footstep.category(), Category::Game);
+        assert_eq!(Sfx::ShotRifle.category(), Category::Game);
+        assert_eq!(Sfx::Click.category(), Category::Ui);
+        assert_eq!(Sfx::Kill.category(), Category::Ui);
+    }
 
     #[test]
     fn every_clip_is_clean() {

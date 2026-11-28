@@ -148,7 +148,15 @@ pub struct Settings {
     pub viewmodel_fov: f32,
     pub viewmodel_offset: [f32; 3],
     pub show_viewmodel: bool,
-    pub volume: f32,
+    /// General volume (0..=1, perceptual curve applied at playback). An old
+    /// `volume` key in `settings.toml` is read as the general volume.
+    #[serde(alias = "volume")]
+    pub master_volume: f32,
+    /// Game sounds (weapons, steps, grenades, impacts, bomb): a single common volume.
+    pub game_volume: f32,
+    /// Interface sounds (clicks, hit and kill feedback).
+    pub ui_volume: f32,
+    pub muted: bool,
     pub fps_limit: u32,
     pub vsync: bool,
     pub fullscreen: bool,
@@ -177,7 +185,10 @@ impl Default for Settings {
             viewmodel_fov: 68.0,
             viewmodel_offset: [2.5, -2.0, -2.0],
             show_viewmodel: true,
-            volume: 0.6,
+            master_volume: 0.8,
+            game_volume: 1.0,
+            ui_volume: 1.0,
+            muted: false,
             fps_limit: 0,
             vsync: false,
             fullscreen: false,
@@ -232,6 +243,25 @@ impl Settings {
         }
     }
 
+    /// Restores the audio settings to their defaults.
+    pub fn reset_audio(&mut self) {
+        let d = Settings::default();
+        self.master_volume = d.master_volume;
+        self.game_volume = d.game_volume;
+        self.ui_volume = d.ui_volume;
+        self.muted = d.muted;
+    }
+
+    /// The audio part, as the mixer reads it.
+    pub fn mix(&self) -> crate::audio::Mix {
+        crate::audio::Mix {
+            master: self.master_volume,
+            game: self.game_volume,
+            ui: self.ui_volume,
+            muted: self.muted,
+        }
+    }
+
     /// Degrees of yaw per mouse count.
     pub fn yaw_per_count(&self, zoomed: bool) -> f32 {
         self.sensitivity * self.m_yaw * if zoomed { self.zoom_sensitivity } else { 1.0 }
@@ -280,5 +310,28 @@ mod tests {
         assert!((vertical_fov(90.0).to_degrees() - 73.74).abs() < 0.05);
         let t = toml::to_string(&s).unwrap();
         assert_eq!(toml::from_str::<Settings>(&t).unwrap(), s);
+    }
+
+    #[test]
+    fn legacy_volume_key_loads_as_master() {
+        let s: Settings = toml::from_str("volume = 0.3\n").unwrap();
+        assert!((s.master_volume - 0.3).abs() < 1e-6);
+        assert_eq!(s.game_volume, 1.0);
+        assert!(!s.muted);
+    }
+
+    #[test]
+    fn reset_audio_restores_defaults_only() {
+        let mut s = Settings {
+            master_volume: 0.1,
+            game_volume: 0.2,
+            ui_volume: 0.3,
+            muted: true,
+            sensitivity: 5.0,
+            ..Settings::default()
+        };
+        s.reset_audio();
+        assert_eq!(s.mix(), Settings::default().mix());
+        assert_eq!(s.sensitivity, 5.0);
     }
 }

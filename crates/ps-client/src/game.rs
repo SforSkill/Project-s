@@ -1180,11 +1180,38 @@ pub fn events(
     hud.notices.retain(|(_, t)| now - *t < 6.0);
 }
 
-/// Keeps the sound volume in step with the settings.
+/// Keeps the mixer in step with the settings.
 pub fn sync_volume(settings: Res<Settings>, sounds: Option<ResMut<Sounds>>) {
-    if let Some(mut s) = sounds
-        && (s.volume - settings.volume).abs() > 1e-4
+    if let Some(mut s) = sounds {
+        let mix = settings.mix();
+        if s.mix != mix {
+            s.mix = mix;
+        }
+    }
+}
+
+/// Saves the settings shortly after the audio sliders stop moving (one write
+/// per drag, not one per frame).
+pub fn autosave_audio(
+    settings: Res<Settings>,
+    time: Res<Time>,
+    mut last: Local<Option<crate::audio::Mix>>,
+    mut dirty_since: Local<Option<f32>>,
+) {
+    let mix = settings.mix();
+    let now = time.elapsed_secs();
+    match *last {
+        None => *last = Some(mix),
+        Some(prev) if prev != mix => {
+            *last = Some(mix);
+            *dirty_since = Some(now);
+        }
+        _ => {}
+    }
+    if let Some(t) = *dirty_since
+        && now - t > 0.6
     {
-        s.volume = settings.volume;
+        settings.save();
+        *dirty_since = None;
     }
 }
