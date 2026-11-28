@@ -20,7 +20,7 @@ Ce dépôt ne contient que le client. La simulation, le contenu, le serveur, le 
 | Entrées sub-tick | `ps-netclient/src/input.rs` | idem | idem |
 | Serveur local embarqué | `ps-client/src/net.rs` (`ps_server::spawn_local`) | `docs/client.md` | `--autotest` |
 | Rendu, caméra, effets, viewmodel | `ps-client/src/game.rs`, `world.rs` | `docs/client.md` | `--autotest` |
-| Menus, HUD, réglages, raccourcis, inspecteur de tirs | `ps-client/src/ui.rs`, `settings.rs` | `docs/client.md`, `QUICKSTART.md` | idem |
+| Menus, HUD, réglages, raccourcis, inspecteur de tirs | `ps-client/src/ui.rs`, `settings.rs`, `bindings.rs`, `keyboard_layout.rs` | `docs/client.md`, `QUICKSTART.md` | idem |
 | Son | `ps-client/src/audio.rs` | `docs/client.md` | — |
 | Personnages en jeu (équipes, arme tenue, flux réseau) | `ps-client/src/character/` (`runtime.rs` = entrée, `settings.rs`, `mod.rs::hold_for`) | `docs/client.md` | `character/hitbox_fit.rs`, `settings.rs`, `--character-demo` |
 | Démo des personnages | `ps-client/src/demo.rs` | `docs/client.md` | `--character-demo --shots` |

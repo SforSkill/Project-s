@@ -48,7 +48,7 @@ Les mesures sont dans le [rapport de validation](https://github.com/SforSkill/Pr
 | Carte compétitive (Citadelle : 2 sites, zones d'achat) | oui | navigation testée | oui | |
 | Viewmodel | oui | — | oui | arme simplifiée (boîtes) |
 | Personnages « peinture liquide » (modèle, animations, shader, effets, palettes, 4 qualités) | oui | tests unitaires + démo `--character-demo --shots` | captures de la démo seulement | voir [characters.md](https://github.com/SforSkill/Project-s-engine/blob/main/docs/characters.md) ; pas encore vu en partie multijoueur réelle |
-| Paramètres (sensibilité, viewmodel, réticule, son, vidéo) | oui | — | oui | touches modifiables seulement dans `settings.toml` |
+| Paramètres (sensibilité, viewmodel, réticule, son, vidéo, touches) | oui | — | oui | — |
 | 5v5 | oui | oui (bots) | oui (1 humain + 9 bots) | jamais avec 10 humains |
 
 ## P2 — fonctions avancées
@@ -96,6 +96,5 @@ Les mesures sont dans le [rapport de validation](https://github.com/SforSkill/Pr
 5. Le serveur n'est pas authentifié par une clé longue durée, et il n'y a pas
    d'anti-triche client.
 6. Il n'y a pas de liste de serveurs, de matchmaking ni de comptes.
-7. Les touches ne se modifient pas depuis le menu.
-8. Le scénario du laboratoire ne produit aucune correction de prédiction : les
+7. Le scénario du laboratoire ne produit aucune correction de prédiction : les
    variantes B et C n'y sont pas départagées.

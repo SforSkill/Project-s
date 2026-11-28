@@ -44,5 +44,9 @@ bevy = { version = "0.20.1", default-features = false, features = [
 ] }
 bevy_egui = { version = "0.43.1", default-features = false, features = ["render", "default_fonts"] }
 
+# Labels of the keys on the player's keyboard layout (`keyboard_layout.rs`).
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_UI_Input_KeyboardAndMouse"] }
+
 [lints]
 workspace = true

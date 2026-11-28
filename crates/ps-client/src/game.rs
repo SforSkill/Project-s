@@ -186,59 +186,6 @@ pub fn setup_cameras(
     ));
 }
 
-pub fn key_from_name(name: &str) -> Option<KeyCode> {
-    use KeyCode::*;
-    let k = match name {
-        "Space" => Space,
-        "ControlLeft" | "Ctrl" => ControlLeft,
-        "ControlRight" => ControlRight,
-        "ShiftLeft" | "Shift" => ShiftLeft,
-        "ShiftRight" => ShiftRight,
-        "AltLeft" | "Alt" => AltLeft,
-        "Tab" => Tab,
-        "CapsLock" => CapsLock,
-        "Enter" => Enter,
-        "Backquote" => Backquote,
-        "F1" => F1,
-        "F2" => F2,
-        "F3" => F3,
-        "F4" => F4,
-        "F5" => F5,
-        "F6" => F6,
-        "F7" => F7,
-        "F8" => F8,
-        "F9" => F9,
-        "F10" => F10,
-        s if s.len() == 1 => {
-            let c = s.chars().next()?.to_ascii_uppercase();
-            const LETTERS: [KeyCode; 26] = [
-                KeyA, KeyB, KeyC, KeyD, KeyE, KeyF, KeyG, KeyH, KeyI, KeyJ, KeyK, KeyL, KeyM, KeyN,
-                KeyO, KeyP, KeyQ, KeyR, KeyS, KeyT, KeyU, KeyV, KeyW, KeyX, KeyY, KeyZ,
-            ];
-            const DIGITS: [KeyCode; 10] = [
-                Digit0, Digit1, Digit2, Digit3, Digit4, Digit5, Digit6, Digit7, Digit8, Digit9,
-            ];
-            if c.is_ascii_uppercase() {
-                LETTERS[(c as u8 - b'A') as usize]
-            } else if c.is_ascii_digit() {
-                DIGITS[(c as u8 - b'0') as usize]
-            } else {
-                return None;
-            }
-        }
-        _ => return None,
-    };
-    Some(k)
-}
-
-fn pressed(keys: &ButtonInput<KeyCode>, name: &str) -> bool {
-    key_from_name(name).is_some_and(|k| keys.pressed(k))
-}
-
-fn just(keys: &ButtonInput<KeyCode>, name: &str) -> bool {
-    key_from_name(name).is_some_and(|k| keys.just_pressed(k))
-}
-
 pub fn active_weapon(me: &SelfState) -> Option<WeaponId> {
     match me.active {
         Slot::Primary => me.primary.map(|p| p.0),
@@ -290,10 +237,13 @@ pub fn input(
     mut window: Single<(&Window, &mut CursorOptions)>,
     mut grab_state: Local<GrabState>,
     autotest: Option<Res<crate::autotest::AutoTest>>,
+    rebind: Res<crate::bindings::Rebind>,
 ) {
     if autotest.is_some() {
         return;
     }
+    let pressed = |name: &str| crate::bindings::pressed(name, &keys, &mouse);
+    let just = |name: &str| crate::bindings::just_pressed(name, &keys, &mouse);
     let now = clock.now();
     let in_game =
         *screen == Screen::Game && net.session.as_ref().is_some_and(|s| s.client.in_game());
@@ -304,8 +254,9 @@ pub fn input(
     if !in_game {
         return;
     }
-    // Toggles available even with the cursor free.
-    if keys.just_pressed(KeyCode::Escape) {
+    // Toggles available even with the cursor free. During a key capture in the
+    // settings, Escape belongs to the capture (it cancels it).
+    if keys.just_pressed(KeyCode::Escape) && rebind.0.is_none() {
         if hud.chat_open {
             hud.chat_open = false;
         } else if hud.buy_menu {
@@ -316,20 +267,22 @@ pub fn input(
             hud.escape_menu = !hud.escape_menu;
         }
     }
-    hud.scoreboard = pressed(&keys, &settings.keys.scoreboard) && !hud.chat_open;
+    let k = &settings.keys;
+    hud.scoreboard = pressed(&k.scoreboard) && !hud.chat_open;
     if !capture {
         s.timeline.set_buttons(now, Buttons(0));
         return;
     }
-    if just(&keys, &settings.keys.buy) {
+    if just(&k.buy) {
         hud.buy_menu = true;
     }
-    if just(&keys, &settings.keys.inspector) {
+    if just(&k.inspector) {
         hud.inspector = !hud.inspector;
     }
-    if keys.just_pressed(KeyCode::KeyY) || keys.just_pressed(KeyCode::KeyU) {
+    let chat_team = just(&k.chat_team);
+    if chat_team || just(&k.chat) {
         hud.chat_open = true;
-        hud.chat_team = keys.just_pressed(KeyCode::KeyU);
+        hud.chat_team = chat_team;
         hud.chat_text.clear();
         s.timeline.set_buttons(now, Buttons(0));
         return;
@@ -347,38 +300,30 @@ pub fn input(
         v.pitch -= d.y * settings.pitch_per_count(zoomed);
         s.timeline.set_view(now, v);
     }
-    let k = &settings.keys;
     let mut b = 0u32;
     let map = [
-        (pressed(&keys, &k.forward), Buttons::FORWARD),
-        (pressed(&keys, &k.back), Buttons::BACK),
-        (pressed(&keys, &k.left), Buttons::LEFT),
-        (pressed(&keys, &k.right), Buttons::RIGHT),
-        (pressed(&keys, &k.jump), Buttons::JUMP),
-        (pressed(&keys, &k.duck), Buttons::DUCK),
-        (pressed(&keys, &k.walk), Buttons::WALK),
-        (pressed(&keys, &k.reload), Buttons::RELOAD),
-        (pressed(&keys, &k.use_key), Buttons::USE),
-        (pressed(&keys, &k.drop), Buttons::DROP),
-        (pressed(&keys, "F"), Buttons::INSPECT),
-        (mouse.pressed(MouseButton::Left), Buttons::ATTACK),
-        (mouse.pressed(MouseButton::Right), Buttons::ATTACK2),
+        (&k.forward, Buttons::FORWARD),
+        (&k.back, Buttons::BACK),
+        (&k.left, Buttons::LEFT),
+        (&k.right, Buttons::RIGHT),
+        (&k.jump, Buttons::JUMP),
+        (&k.duck, Buttons::DUCK),
+        (&k.walk, Buttons::WALK),
+        (&k.reload, Buttons::RELOAD),
+        (&k.use_key, Buttons::USE),
+        (&k.drop, Buttons::DROP),
+        (&k.inspect, Buttons::INSPECT),
+        (&k.attack, Buttons::ATTACK),
+        (&k.attack2, Buttons::ATTACK2),
     ];
-    for (on, bit) in map {
-        if on {
+    for (name, bit) in map {
+        if pressed(name) {
             b |= bit;
         }
     }
     s.timeline.set_buttons(now, Buttons(b));
-    for (key, slot) in [
-        (KeyCode::Digit1, 1),
-        (KeyCode::Digit2, 2),
-        (KeyCode::Digit3, 3),
-        (KeyCode::Digit4, 4),
-        (KeyCode::Digit5, 5),
-        (KeyCode::KeyQ, 6),
-    ] {
-        if keys.just_pressed(key) {
+    for (name, slot) in k.slots() {
+        if just(name) {
             s.timeline.select(slot);
         }
     }

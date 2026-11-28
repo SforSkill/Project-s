@@ -1,11 +1,12 @@
 //! egui interface: main menu, HUD, scoreboard, buy menu, chat, settings,
 //! network graph and Shot Inspector.
 
+use crate::bindings::{self, Capture};
 use crate::character::settings::{CharacterSettings, ColorMode};
 use crate::character::style::{PaletteId, Quality};
 use crate::game::{Hud, Screen, active_weapon};
 use crate::net::{Clock, GameDataRes, LocalGame, Net};
-use crate::settings::{FOV, Settings, vertical_fov};
+use crate::settings::{FOV, Keys, Settings, vertical_fov};
 use crate::theme;
 use bevy::prelude::*;
 use bevy_egui::{EguiContexts, egui};
@@ -148,7 +149,7 @@ pub(crate) fn character_settings_ui(ui: &mut egui::Ui, c: &mut CharacterSettings
     ui.end_row();
 }
 
-fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32) {
+fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32, cap: &mut Capture) {
     egui::Grid::new("settings_grid")
         .num_columns(2)
         .spacing([16.0, 8.0])
@@ -268,7 +269,71 @@ fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32) {
             ui.add(egui::Slider::new(&mut s.ui_scale, 0.75..=2.0));
             ui.end_row();
         });
-    ui.label(RichText::new("Les touches se modifient dans settings.toml (dossier ProjetS de la configuration utilisateur). Variante et extrapolation s'appliquent à la prochaine connexion.").small().weak());
+    ui.label(
+        RichText::new("Variante et extrapolation s'appliquent à la prochaine connexion.")
+            .small()
+            .weak(),
+    );
+    ui.add_space(12.0);
+    keys_ui(ui, &mut s.keys, cap);
+}
+
+/// Key bindings: click an action, then press a key or a mouse button (Escape
+/// cancels). Inputs bound to several actions are shown in orange.
+fn keys_ui(ui: &mut egui::Ui, keys: &mut Keys, cap: &mut Capture) {
+    cap.apply(keys);
+    theme::section_title(ui, "Touches");
+    ui.add_space(6.0);
+    let conflicts = bindings::conflicts(keys);
+    let waiting = cap.rebind.0;
+    egui::Grid::new("keys_grid")
+        .num_columns(3)
+        .spacing([16.0, 4.0])
+        .show(ui, |ui| {
+            for (i, (label, name)) in keys.entries_mut().into_iter().enumerate() {
+                ui.label(label);
+                let text = if waiting == Some(i) {
+                    RichText::new("Appuyez sur une touche…").color(theme::AMETHYSTE_CLAIR)
+                } else if conflicts[i].is_empty() {
+                    RichText::new(bindings::label(name, &cap.layout))
+                } else {
+                    RichText::new(bindings::label(name, &cap.layout)).color(theme::MINIUM)
+                };
+                let mut r = ui.add(egui::Button::new(text).min_size(Vec2::new(170.0, 0.0)));
+                if !conflicts[i].is_empty() {
+                    r = r.on_hover_text(format!(
+                        "Aussi utilisée pour : {}",
+                        conflicts[i].join(", ")
+                    ));
+                }
+                if r.clicked() {
+                    // Space or Enter must not re-activate this button once captured.
+                    r.surrender_focus();
+                    cap.rebind.0 = if waiting == Some(i) { None } else { Some(i) };
+                }
+                if ui
+                    .add_enabled(!name.is_empty(), egui::Button::new("✕").small())
+                    .on_hover_text("Ne lier aucune touche")
+                    .clicked()
+                {
+                    name.clear();
+                }
+                ui.end_row();
+            }
+        });
+    ui.horizontal(|ui| {
+        if ui.button("Touches par défaut").clicked() {
+            *keys = Keys::default();
+            cap.rebind.0 = None;
+        }
+        ui.label(
+            RichText::new(
+                "Les touches suivent la disposition du clavier. Échap reste réservé au menu.",
+            )
+            .small()
+            .weak(),
+        );
+    });
 }
 
 /// Home screen: full-screen Graphite, a rail on the left (monogram, title, tick
@@ -365,7 +430,12 @@ pub fn menu(
     mut hud: ResMut<Hud>,
     mut exit: MessageWriter<AppExit>,
     logo: Option<Res<theme::Logo>>,
+    mut cap: Capture,
 ) -> Result {
+    // A capture only lives while a settings screen is shown.
+    if !(*screen == Screen::Menu && menu.tab == MenuTab::Settings || hud.settings_open) {
+        cap.rebind.0 = None;
+    }
     let ctx = contexts.ctx_mut()?;
     ctx.set_zoom_factor(settings.ui_scale.clamp(0.5, 3.0));
     let now = clock.now();
@@ -499,7 +569,7 @@ pub fn menu(
                         let mut dpi = menu.dpi;
                         egui::ScrollArea::vertical()
                             .max_height(ui.available_height() - 60.0)
-                            .show(ui, |ui| settings_ui(ui, &mut settings, &mut dpi));
+                            .show(ui, |ui| settings_ui(ui, &mut settings, &mut dpi, &mut cap));
                         menu.dpi = dpi;
                         if ui.button("Enregistrer").clicked() {
                             settings.save();
@@ -510,7 +580,7 @@ pub fn menu(
                         ui.add_space(10.0);
                         ui.label("Projet S : FPS tactique compétitif, alpha jouable.");
                         ui.label("Déplacements, armes, réseau et règles : code original. Aucun contenu de Valve ou de Riot.");
-                        ui.label(RichText::new("Commandes : ZQSD/WASD selon les touches physiques, Espace saut, Ctrl accroupi, Maj marcher, 1-5 armes, Q dernière arme, R recharger, E utiliser, G lâcher, B achat, Tab scores, Y/U chat, F3 inspecteur de tirs, Échap menu.").small());
+                        ui.label(RichText::new("Commandes : modifiables dans Paramètres › Touches (enregistrées dans settings.toml). Échap ouvre le menu, F11 ou Alt+Entrée bascule le plein écran.").small());
                     }
                 }
             });
@@ -622,7 +692,7 @@ pub fn menu(
                     .show(ctx, |ui| {
                         egui::ScrollArea::vertical()
                             .max_height(520.0)
-                            .show(ui, |ui| settings_ui(ui, &mut settings, &mut dpi));
+                            .show(ui, |ui| settings_ui(ui, &mut settings, &mut dpi, &mut cap));
                         if ui.button("Enregistrer").clicked() {
                             settings.save();
                         }
@@ -647,6 +717,7 @@ pub fn hud(
     clock: Res<Clock>,
     mut hud: ResMut<Hud>,
     time: Res<Time>,
+    layout: Res<crate::keyboard_layout::KeyLayout>,
 ) -> Result {
     if *screen != Screen::Game {
         return Ok(());
@@ -1076,7 +1147,7 @@ pub fn hud(
             text(
                 Pos2::new(screen_rect.min.x + 24.0, screen_rect.min.y + 42.0),
                 Align2::LEFT_TOP,
-                &format!("[{}] acheter", settings.keys.buy),
+                &format!("[{}] acheter", bindings::label(&settings.keys.buy, &layout)),
                 &small,
                 Color32::from_gray(190),
             );
