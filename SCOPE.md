@@ -48,6 +48,6 @@ SemVer pré-release (`0.1.0-alpha.N`), tag `vX.Y.Z` par release-please, `Cargo.l
 Archives de release Windows et Linux (`.github/workflows/release.yml`, `tools/package.py`) avec le contenu épinglé. Le serveur dédié est livré par Project-s-server.
 
 ## 14. Limites connues
-- Pas de lecteur de replay ni de mode spectateur libre ; touches modifiables seulement dans `settings.toml`.
+- Pas de lecteur de replay ni de mode spectateur libre.
 - Le client Linux est construit en CI mais n'a jamais été lancé sur une machine avec écran.
 - Une partie de la présentation (caméras, viewmodel, HUD, audio, maillage des cartes) reste mêlée à l'état du jeu ; elle rejoindra Project-s-engine module par module.

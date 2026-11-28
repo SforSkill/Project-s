@@ -71,13 +71,19 @@ Les paramètres sont dans **Échap → Paramètres** :
 - réticule ;
 - volume ;
 - limite d'images, V-Sync, plein écran ;
-- graphe réseau et variante réseau.
+- graphe réseau et variante réseau ;
+- touches (toutes les actions ci-dessus sauf Échap, F11 et Alt+Entrée).
 
 Le champ de vision est fixe : 84° horizontal en 4:3 (convention CS), il ne se règle pas.
 
 Ils sont enregistrés dans `%APPDATA%\ProjetS\settings.toml` sous Windows, et dans
 `~/.config/ProjetS/settings.toml` sous Linux. Les touches se changent dans la
-section `[keys]` de ce fichier (pas encore depuis le menu).
+section `[keys]` de ce fichier ou, plus simplement, dans **Paramètres → Touches** :
+cliquer sur une action puis appuyer sur la nouvelle touche ou le bouton de souris
+(Échap annule ; une touche utilisée deux fois s'affiche en orange). L'écran affiche
+les touches de votre disposition (Z Q S D en AZERTY) ; le fichier garde le nom
+physique (W A S D). Échap reste
+réservé au menu.
 
 ## Modes
 
