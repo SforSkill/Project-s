@@ -1,11 +1,13 @@
 //! egui interface: main menu, HUD, scoreboard, buy menu, chat, settings,
 //! network graph and Shot Inspector.
 
+use crate::bindings::{self, Capture};
 use crate::character::settings::{CharacterSettings, ColorMode};
 use crate::character::style::{PaletteId, Quality};
 use crate::game::{Hud, Screen, active_weapon};
 use crate::net::{Clock, GameDataRes, LocalGame, Net};
-use crate::settings::{Settings, vertical_fov};
+use crate::settings::{FOV, Keys, Settings, vertical_fov};
+use crate::theme;
 use bevy::prelude::*;
 use bevy_egui::{EguiContexts, egui};
 use egui::{Align2, Color32, FontId, Pos2, RichText, Stroke, Vec2};
@@ -147,7 +149,7 @@ pub(crate) fn character_settings_ui(ui: &mut egui::Ui, c: &mut CharacterSettings
     ui.end_row();
 }
 
-fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32) {
+fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32, cap: &mut Capture) {
     egui::Grid::new("settings_grid")
         .num_columns(2)
         .spacing([16.0, 8.0])
@@ -189,9 +191,6 @@ fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32) {
             ui.end_row();
             ui.label("Inverser l'axe Y");
             ui.checkbox(&mut s.invert_y, "");
-            ui.end_row();
-            ui.label("Champ de vision (horizontal 4:3)");
-            ui.add(egui::Slider::new(&mut s.fov, 70.0..=110.0).suffix("°"));
             ui.end_row();
             ui.label("FOV de l'arme");
             ui.add(egui::Slider::new(&mut s.viewmodel_fov, 54.0..=90.0).suffix("°"));
@@ -270,7 +269,153 @@ fn settings_ui(ui: &mut egui::Ui, s: &mut Settings, dpi: &mut f32) {
             ui.add(egui::Slider::new(&mut s.ui_scale, 0.75..=2.0));
             ui.end_row();
         });
-    ui.label(RichText::new("Les touches se modifient dans settings.toml (dossier ProjetS de la configuration utilisateur). Variante et extrapolation s'appliquent à la prochaine connexion.").small().weak());
+    ui.label(
+        RichText::new("Variante et extrapolation s'appliquent à la prochaine connexion.")
+            .small()
+            .weak(),
+    );
+    ui.add_space(12.0);
+    keys_ui(ui, &mut s.keys, cap);
+}
+
+/// Key bindings: click an action, then press a key or a mouse button (Escape
+/// cancels). Inputs bound to several actions are shown in orange.
+fn keys_ui(ui: &mut egui::Ui, keys: &mut Keys, cap: &mut Capture) {
+    cap.apply(keys);
+    theme::section_title(ui, "Touches");
+    ui.add_space(6.0);
+    let conflicts = bindings::conflicts(keys);
+    let waiting = cap.rebind.0;
+    egui::Grid::new("keys_grid")
+        .num_columns(3)
+        .spacing([16.0, 4.0])
+        .show(ui, |ui| {
+            for (i, (label, name)) in keys.entries_mut().into_iter().enumerate() {
+                ui.label(label);
+                let text = if waiting == Some(i) {
+                    RichText::new("Appuyez sur une touche…").color(theme::AMETHYSTE_CLAIR)
+                } else if conflicts[i].is_empty() {
+                    RichText::new(bindings::label(name, &cap.layout))
+                } else {
+                    RichText::new(bindings::label(name, &cap.layout)).color(theme::MINIUM)
+                };
+                let mut r = ui.add(egui::Button::new(text).min_size(Vec2::new(170.0, 0.0)));
+                if !conflicts[i].is_empty() {
+                    r = r.on_hover_text(format!(
+                        "Aussi utilisée pour : {}",
+                        conflicts[i].join(", ")
+                    ));
+                }
+                if r.clicked() {
+                    // Space or Enter must not re-activate this button once captured.
+                    r.surrender_focus();
+                    cap.rebind.0 = if waiting == Some(i) { None } else { Some(i) };
+                }
+                if ui
+                    .add_enabled(!name.is_empty(), egui::Button::new("✕").small())
+                    .on_hover_text("Ne lier aucune touche")
+                    .clicked()
+                {
+                    name.clear();
+                }
+                ui.end_row();
+            }
+        });
+    ui.horizontal(|ui| {
+        if ui.button("Touches par défaut").clicked() {
+            *keys = Keys::default();
+            cap.rebind.0 = None;
+        }
+        ui.label(
+            RichText::new(
+                "Les touches suivent la disposition du clavier. Échap reste réservé au menu.",
+            )
+            .small()
+            .weak(),
+        );
+    });
+}
+
+/// Home screen: full-screen Graphite, a rail on the left (monogram, title, tick
+/// ruler, navigation, version) and the selected tab on the right. Returns true
+/// when "Quitter" is clicked.
+fn main_menu(
+    ctx: &egui::Context,
+    menu: &mut MenuState,
+    logo: &theme::Logo,
+    content: impl FnOnce(&mut egui::Ui, &mut MenuState),
+) -> bool {
+    const RAIL: f32 = 300.0;
+    let mut quit = false;
+    let screen = ctx.content_rect();
+    egui::Area::new(egui::Id::new("main_menu"))
+        .order(egui::Order::Background)
+        .fixed_pos(screen.min)
+        .show(ctx, |ui| {
+            let p = ui.painter();
+            p.rect_filled(screen, 0.0, theme::GRAPHITE);
+            let rail = egui::Rect::from_min_size(screen.min, Vec2::new(RAIL, screen.height()));
+            p.rect_filled(rail, 0.0, theme::ABYSSE);
+            p.line_segment(
+                [rail.right_top(), rail.right_bottom()],
+                Stroke::new(1.0, theme::LIGNE),
+            );
+
+            let inner = rail.shrink2(Vec2::new(28.0, 32.0));
+            ui.scope_builder(egui::UiBuilder::new().max_rect(inner), |ui| {
+                ui.add(egui::Image::new(&logo.0).fit_to_exact_size(Vec2::new(68.0, 80.6)));
+                ui.add_space(14.0);
+                ui.label(
+                    RichText::new("PROJET S")
+                        .font(theme::title(30.0))
+                        .color(theme::CRAIE),
+                );
+                ui.label(
+                    RichText::new("FPS TACTIQUE COMPÉTITIF")
+                        .font(theme::title(10.0))
+                        .color(theme::ACIER),
+                );
+                ui.add_space(14.0);
+                theme::tick_ruler(ui, inner.width());
+                ui.add_space(26.0);
+                ui.scope(|ui| {
+                    ui.spacing_mut().item_spacing.y = 2.0;
+                    for (tab, label) in [
+                        (MenuTab::Play, "Jouer"),
+                        (MenuTab::Join, "Rejoindre"),
+                        (MenuTab::Settings, "Paramètres"),
+                        (MenuTab::About, "À propos"),
+                    ] {
+                        if theme::nav_item(ui, label, menu.tab == tab).clicked() {
+                            menu.tab = tab;
+                        }
+                    }
+                });
+                ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
+                    ui.label(
+                        RichText::new(format!("v{} · alpha · 128 Hz", env!("CARGO_PKG_VERSION")))
+                            .monospace()
+                            .color(theme::ACIER),
+                    );
+                    ui.add_space(6.0);
+                    if theme::nav_item(ui, "Quitter", false).clicked() {
+                        quit = true;
+                    }
+                });
+            });
+
+            let area = egui::Rect::from_min_max(egui::pos2(rail.right(), screen.top()), screen.max);
+            let width = (area.width() - 112.0).clamp(320.0, 680.0);
+            let body = egui::Rect::from_min_size(
+                egui::pos2(area.left() + 56.0, area.top() + 64.0),
+                Vec2::new(width, area.height() - 104.0),
+            );
+            ui.scope_builder(egui::UiBuilder::new().max_rect(body), |ui| {
+                ui.set_width(width);
+                content(ui, menu);
+            });
+        });
+    quit
 }
 
 /// Main menu, connection screen, escape menu.
@@ -284,7 +429,13 @@ pub fn menu(
     clock: Res<Clock>,
     mut hud: ResMut<Hud>,
     mut exit: MessageWriter<AppExit>,
+    logo: Option<Res<theme::Logo>>,
+    mut cap: Capture,
 ) -> Result {
+    // A capture only lives while a settings screen is shown.
+    if !(*screen == Screen::Menu && menu.tab == MenuTab::Settings || hud.settings_open) {
+        cap.rebind.0 = None;
+    }
     let ctx = contexts.ctx_mut()?;
     ctx.set_zoom_factor(settings.ui_scale.clamp(0.5, 3.0));
     let now = clock.now();
@@ -294,60 +445,91 @@ pub fn menu(
     }
     match *screen {
         Screen::Menu => {
-            egui::Window::new("Projet S").anchor(Align2::CENTER_CENTER, [0.0, 0.0]).collapsible(false).resizable(false).default_width(560.0).show(ctx, |ui| {
-                ui.horizontal(|ui| {
-                    ui.heading(RichText::new("PROJET S").strong().size(30.0));
-                    ui.label(RichText::new(format!("v{} alpha", env!("CARGO_PKG_VERSION"))).weak());
-                });
-                ui.separator();
-                ui.horizontal(|ui| {
-                    ui.selectable_value(&mut menu.tab, MenuTab::Play, "Jouer (local)");
-                    ui.selectable_value(&mut menu.tab, MenuTab::Join, "Rejoindre un serveur");
-                    ui.selectable_value(&mut menu.tab, MenuTab::Settings, "Paramètres");
-                    ui.selectable_value(&mut menu.tab, MenuTab::About, "À propos");
-                });
-                ui.separator();
+            // The theme (title font, logo) is ready from the second egui frame.
+            let Some(logo) = logo.as_deref() else {
+                return Ok(());
+            };
+            let quit = main_menu(ctx, &mut menu, logo, |ui, menu| {
                 if let Some(e) = &net.error {
-                    ui.colored_label(Color32::from_rgb(255, 120, 100), e);
+                    ui.colored_label(theme::MINIUM, e);
+                    ui.add_space(6.0);
                 }
                 match menu.tab {
                     MenuTab::Play => {
-                        let maps: Vec<(String, String, Vec<String>)> = data.0.maps.iter().map(|(k, m)| (k.clone(), m.display_name.clone(), m.modes.clone())).collect();
-                        egui::Grid::new("play_grid").num_columns(2).spacing([16.0, 8.0]).show(ui, |ui| {
-                            ui.label("Carte");
-                            let cur = maps.iter().find(|m| m.0 == menu.game.map).map(|m| m.1.clone()).unwrap_or_default();
-                            egui::ComboBox::from_id_salt("map").selected_text(cur).show_ui(ui, |ui| {
-                                for (k, n, _) in &maps {
-                                    ui.selectable_value(&mut menu.game.map, k.clone(), n);
+                        theme::section_title(ui, "Jouer en local");
+                        ui.add_space(10.0);
+                        let maps: Vec<(String, String, Vec<String>)> = data
+                            .0
+                            .maps
+                            .iter()
+                            .map(|(k, m)| (k.clone(), m.display_name.clone(), m.modes.clone()))
+                            .collect();
+                        egui::Grid::new("play_grid")
+                            .num_columns(2)
+                            .spacing([16.0, 8.0])
+                            .show(ui, |ui| {
+                                ui.label("Carte");
+                                let cur = maps
+                                    .iter()
+                                    .find(|m| m.0 == menu.game.map)
+                                    .map(|m| m.1.clone())
+                                    .unwrap_or_default();
+                                egui::ComboBox::from_id_salt("map")
+                                    .selected_text(cur)
+                                    .show_ui(ui, |ui| {
+                                        for (k, n, _) in &maps {
+                                            ui.selectable_value(&mut menu.game.map, k.clone(), n);
+                                        }
+                                    });
+                                ui.end_row();
+                                ui.label("Mode");
+                                let modes: Vec<String> = maps
+                                    .iter()
+                                    .find(|m| m.0 == menu.game.map)
+                                    .map(|m| m.2.clone())
+                                    .unwrap_or_default();
+                                let profiles: Vec<String> = data
+                                    .0
+                                    .rules
+                                    .profiles
+                                    .iter()
+                                    .filter(|(_, p)| {
+                                        modes.is_empty()
+                                            || modes.iter().any(|m| {
+                                                m == &format!("{:?}", p.mode).to_lowercase()
+                                            })
+                                    })
+                                    .map(|(k, _)| k.clone())
+                                    .collect();
+                                if !profiles.contains(&menu.game.profile)
+                                    && let Some(p) = profiles.first()
+                                {
+                                    menu.game.profile = p.clone();
                                 }
+                                egui::ComboBox::from_id_salt("profile")
+                                    .selected_text(profile_label(&menu.game.profile))
+                                    .show_ui(ui, |ui| {
+                                        for p in &profiles {
+                                            ui.selectable_value(
+                                                &mut menu.game.profile,
+                                                p.clone(),
+                                                profile_label(p),
+                                            );
+                                        }
+                                    });
+                                ui.end_row();
+                                ui.label("Compléter avec des bots");
+                                ui.checkbox(&mut menu.game.fill_bots, "");
+                                ui.end_row();
+                                ui.label("Bots supplémentaires");
+                                ui.add(egui::Slider::new(&mut menu.game.bots, 0..=15));
+                                ui.end_row();
+                                ui.label("Difficulté des bots");
+                                ui.add(egui::Slider::new(&mut menu.game.difficulty, 0.0..=1.0));
+                                ui.end_row();
                             });
-                            ui.end_row();
-                            ui.label("Mode");
-                            let modes: Vec<String> = maps.iter().find(|m| m.0 == menu.game.map).map(|m| m.2.clone()).unwrap_or_default();
-                            let profiles: Vec<String> = data.0.rules.profiles.iter().filter(|(_, p)| modes.is_empty() || modes.iter().any(|m| m == &format!("{:?}", p.mode).to_lowercase())).map(|(k, _)| k.clone()).collect();
-                            if !profiles.contains(&menu.game.profile)
-                                && let Some(p) = profiles.first()
-                            {
-                                menu.game.profile = p.clone();
-                            }
-                            egui::ComboBox::from_id_salt("profile").selected_text(profile_label(&menu.game.profile)).show_ui(ui, |ui| {
-                                for p in &profiles {
-                                    ui.selectable_value(&mut menu.game.profile, p.clone(), profile_label(p));
-                                }
-                            });
-                            ui.end_row();
-                            ui.label("Compléter avec des bots");
-                            ui.checkbox(&mut menu.game.fill_bots, "");
-                            ui.end_row();
-                            ui.label("Bots supplémentaires");
-                            ui.add(egui::Slider::new(&mut menu.game.bots, 0..=15));
-                            ui.end_row();
-                            ui.label("Difficulté des bots");
-                            ui.add(egui::Slider::new(&mut menu.game.difficulty, 0.0..=1.0));
-                            ui.end_row();
-                        });
                         ui.add_space(8.0);
-                        if ui.button(RichText::new("Lancer la partie").size(18.0)).clicked() {
+                        if theme::primary_button(ui, "Lancer la partie").clicked() {
                             let g = menu.game.clone();
                             net.host(&g, &settings, data.0.clone(), now);
                             if net.session.is_some() {
@@ -357,6 +539,8 @@ pub fn menu(
                         ui.label(RichText::new("Un serveur local (128 Hz) démarre dans le jeu ; les autres joueurs du réseau local ne peuvent pas le rejoindre (lié à 127.0.0.1). Pour héberger, lancez projet-s-server.").small().weak());
                     }
                     MenuTab::Join => {
+                        theme::section_title(ui, "Rejoindre un serveur");
+                        ui.add_space(10.0);
                         if menu.address.is_empty() {
                             menu.address = settings.last_server.clone();
                         }
@@ -364,7 +548,7 @@ pub fn menu(
                             ui.label("Adresse (hôte:port)");
                             ui.text_edit_singleline(&mut menu.address);
                         });
-                        if ui.button(RichText::new("Se connecter").size(18.0)).clicked() {
+                        if theme::primary_button(ui, "Se connecter").clicked() {
                             let a = menu.address.trim().to_string();
                             settings.last_server = a.clone();
                             settings.save();
@@ -373,28 +557,37 @@ pub fn menu(
                                 *screen = Screen::Game;
                             }
                         }
-                        ui.label(RichText::new("Port par défaut du serveur dédié : 27015/UDP.").small().weak());
+                        ui.label(
+                            RichText::new("Port par défaut du serveur dédié : 27015/UDP.")
+                                .small()
+                                .weak(),
+                        );
                     }
                     MenuTab::Settings => {
+                        theme::section_title(ui, "Paramètres");
+                        ui.add_space(10.0);
                         let mut dpi = menu.dpi;
-                        egui::ScrollArea::vertical().max_height(480.0).show(ui, |ui| settings_ui(ui, &mut settings, &mut dpi));
+                        egui::ScrollArea::vertical()
+                            .max_height(ui.available_height() - 60.0)
+                            .show(ui, |ui| settings_ui(ui, &mut settings, &mut dpi, &mut cap));
                         menu.dpi = dpi;
                         if ui.button("Enregistrer").clicked() {
                             settings.save();
                         }
                     }
                     MenuTab::About => {
+                        theme::section_title(ui, "À propos");
+                        ui.add_space(10.0);
                         ui.label("Projet S : FPS tactique compétitif, alpha jouable.");
                         ui.label("Déplacements, armes, réseau et règles : code original. Aucun contenu de Valve ou de Riot.");
-                        ui.label(RichText::new("Commandes : ZQSD/WASD selon les touches physiques, Espace saut, Ctrl accroupi, Maj marcher, 1-5 armes, Q dernière arme, R recharger, E utiliser, G lâcher, B achat, Tab scores, Y/U chat, F3 inspecteur de tirs, Échap menu.").small());
+                        ui.label(RichText::new("Commandes : modifiables dans Paramètres › Touches (enregistrées dans settings.toml). Échap ouvre le menu, F11 ou Alt+Entrée bascule le plein écran.").small());
                     }
                 }
-                ui.separator();
-                if ui.button("Quitter").clicked() {
-                    settings.save();
-                    exit.write(AppExit::Success);
-                }
             });
+            if quit {
+                settings.save();
+                exit.write(AppExit::Success);
+            }
         }
         Screen::Game => {
             let Some(s) = &mut net.session else {
@@ -499,7 +692,7 @@ pub fn menu(
                     .show(ctx, |ui| {
                         egui::ScrollArea::vertical()
                             .max_height(520.0)
-                            .show(ui, |ui| settings_ui(ui, &mut settings, &mut dpi));
+                            .show(ui, |ui| settings_ui(ui, &mut settings, &mut dpi, &mut cap));
                         if ui.button("Enregistrer").clicked() {
                             settings.save();
                         }
@@ -524,6 +717,7 @@ pub fn hud(
     clock: Res<Clock>,
     mut hud: ResMut<Hud>,
     time: Res<Time>,
+    layout: Res<crate::keyboard_layout::KeyLayout>,
 ) -> Result {
     if *screen != Screen::Game {
         return Ok(());
@@ -651,7 +845,7 @@ pub fn hud(
         if let (Some(m), Some(w)) = (&me, weapon) {
             let (rp, ry) = m.hand.recoil_now(w, c.server_time(now));
             if rp.abs() + ry.abs() > 0.05 {
-                let f = screen_rect.height() * 0.5 / (vertical_fov(settings.fov) * 0.5).tan();
+                let f = screen_rect.height() * 0.5 / (vertical_fov(FOV) * 0.5).tan();
                 let p = centre
                     + Vec2::new(
                         -(ry * 0.5).to_radians().tan() * f,
@@ -953,7 +1147,7 @@ pub fn hud(
             text(
                 Pos2::new(screen_rect.min.x + 24.0, screen_rect.min.y + 42.0),
                 Align2::LEFT_TOP,
-                &format!("[{}] acheter", settings.keys.buy),
+                &format!("[{}] acheter", bindings::label(&settings.keys.buy, &layout)),
                 &small,
                 Color32::from_gray(190),
             );
@@ -1071,9 +1265,9 @@ pub fn hud(
     let tan_half = (vertical_fov(if zoomed {
         weapon
             .and_then(|w| w.zoom_fov(me.as_ref().map(|m| m.hand.zoom).unwrap_or(0)))
-            .unwrap_or(settings.fov)
+            .unwrap_or(FOV)
     } else {
-        settings.fov
+        FOV
     }) * 0.5)
         .tan();
     for r in c.remote_players(now) {

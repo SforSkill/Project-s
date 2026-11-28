@@ -10,6 +10,7 @@
 mod hitbox_fit;
 pub mod runtime;
 pub mod settings;
+mod weapon_models;
 
 pub use ps_engine_character::{anim, fx, liquid, style};
 pub use runtime::{CharEvent, CharState, CharacterFeed, FirstPerson};

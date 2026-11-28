@@ -8,11 +8,16 @@
 
 mod audio;
 mod autotest;
+mod bindings;
 mod character;
 mod demo;
 mod game;
+mod keyboard_layout;
 mod net;
 mod settings;
+mod sky;
+mod textures;
+mod theme;
 mod ui;
 mod world;
 
@@ -108,13 +113,18 @@ fn main() -> AppExit {
         last: Instant::now(),
     })
     .init_resource::<net::Net>()
+    .init_resource::<bindings::Rebind>()
+    .init_resource::<keyboard_layout::KeyLayout>()
     .init_resource::<game::Screen>()
     .init_resource::<game::Hud>()
     .init_resource::<game::Scene>()
     .configure_sets(Update, (Stage::Input, Stage::Send, Stage::Present).chain())
-    .add_systems(Startup, (game::setup_cameras, audio::setup))
+    .add_systems(
+        Startup,
+        (game::setup_cameras, audio::setup, textures::setup),
+    )
     .add_systems(PostStartup, game::setup_viewmodel)
-    .add_systems(PreUpdate, net::receive)
+    .add_systems(PreUpdate, (net::receive, keyboard_layout::update))
     .add_systems(
         Update,
         (game::input, autotest::run).chain().in_set(Stage::Input),
@@ -136,13 +146,24 @@ fn main() -> AppExit {
             .chain()
             .in_set(Stage::Present),
     )
-    .add_systems(EguiPrimaryContextPass, (ui::hud, ui::menu).chain())
+    .add_systems(
+        EguiPrimaryContextPass,
+        (theme::apply, ui::hud, ui::menu).chain(),
+    )
     .add_systems(Last, (limit_frame_rate, shutdown_on_exit))
     .run()
 }
 
-/// F11 or Alt+Enter switches between windowed and fullscreen, and saves it.
-fn toggle_fullscreen(keys: Res<ButtonInput<KeyCode>>, mut s: ResMut<settings::Settings>) {
+/// F11 or Alt+Enter switches between windowed and fullscreen, and saves it
+/// (not while a key is being captured in the settings).
+fn toggle_fullscreen(
+    keys: Res<ButtonInput<KeyCode>>,
+    rebind: Res<bindings::Rebind>,
+    mut s: ResMut<settings::Settings>,
+) {
+    if rebind.0.is_some() {
+        return;
+    }
     let alt = keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight]);
     let enter = keys.any_just_pressed([KeyCode::Enter, KeyCode::NumpadEnter]);
     if keys.just_pressed(KeyCode::F11) || (alt && enter) {

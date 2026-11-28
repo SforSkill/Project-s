@@ -28,6 +28,8 @@ impl Default for Crosshair {
     }
 }
 
+/// Key bindings, one name per action (see `bindings.rs` for the accepted names;
+/// an empty string leaves the action unbound). Physical keys: "W" is Z on AZERTY.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Keys {
@@ -38,11 +40,22 @@ pub struct Keys {
     pub jump: String,
     pub duck: String,
     pub walk: String,
+    pub attack: String,
+    pub attack2: String,
     pub reload: String,
+    pub inspect: String,
     pub use_key: String,
     pub drop: String,
+    pub slot1: String,
+    pub slot2: String,
+    pub slot3: String,
+    pub slot4: String,
+    pub slot5: String,
+    pub last_weapon: String,
     pub buy: String,
     pub scoreboard: String,
+    pub chat: String,
+    pub chat_team: String,
     pub inspector: String,
 }
 
@@ -56,13 +69,68 @@ impl Default for Keys {
             jump: "Space".into(),
             duck: "ControlLeft".into(),
             walk: "ShiftLeft".into(),
+            attack: "Mouse1".into(),
+            attack2: "Mouse2".into(),
             reload: "R".into(),
+            inspect: "F".into(),
             use_key: "E".into(),
             drop: "G".into(),
+            slot1: "1".into(),
+            slot2: "2".into(),
+            slot3: "3".into(),
+            slot4: "4".into(),
+            slot5: "5".into(),
+            last_weapon: "Q".into(),
             buy: "B".into(),
             scoreboard: "Tab".into(),
+            chat: "Y".into(),
+            chat_team: "U".into(),
             inspector: "F3".into(),
         }
+    }
+}
+
+impl Keys {
+    /// Every action with its label in the settings screen, in display order.
+    pub fn entries_mut(&mut self) -> [(&'static str, &mut String); 24] {
+        [
+            ("Avancer", &mut self.forward),
+            ("Reculer", &mut self.back),
+            ("Gauche", &mut self.left),
+            ("Droite", &mut self.right),
+            ("Sauter", &mut self.jump),
+            ("S'accroupir", &mut self.duck),
+            ("Marcher", &mut self.walk),
+            ("Tir", &mut self.attack),
+            ("Tir secondaire / zoom", &mut self.attack2),
+            ("Recharger", &mut self.reload),
+            ("Inspecter l'arme", &mut self.inspect),
+            ("Utiliser", &mut self.use_key),
+            ("Lâcher l'arme", &mut self.drop),
+            ("Arme principale", &mut self.slot1),
+            ("Arme secondaire", &mut self.slot2),
+            ("Couteau", &mut self.slot3),
+            ("Grenades", &mut self.slot4),
+            ("Bombe", &mut self.slot5),
+            ("Dernière arme", &mut self.last_weapon),
+            ("Menu d'achat", &mut self.buy),
+            ("Tableau des scores", &mut self.scoreboard),
+            ("Chat général", &mut self.chat),
+            ("Chat d'équipe", &mut self.chat_team),
+            ("Inspecteur de tirs", &mut self.inspector),
+        ]
+    }
+
+    /// Weapon slot selections (`timeline.select` index) and their binding.
+    pub fn slots(&self) -> [(&str, u8); 6] {
+        [
+            (&self.slot1, 1),
+            (&self.slot2, 2),
+            (&self.slot3, 3),
+            (&self.slot4, 4),
+            (&self.slot5, 5),
+            (&self.last_weapon, 6),
+        ]
     }
 }
 
@@ -77,8 +145,6 @@ pub struct Settings {
     pub invert_y: bool,
     /// Scoped sensitivity multiplier (zoom_sensitivity_ratio).
     pub zoom_sensitivity: f32,
-    /// Horizontal field of view at 4:3 (CS convention), degrees.
-    pub fov: f32,
     pub viewmodel_fov: f32,
     pub viewmodel_offset: [f32; 3],
     pub show_viewmodel: bool,
@@ -108,7 +174,6 @@ impl Default for Settings {
             m_pitch: 0.022,
             invert_y: false,
             zoom_sensitivity: 1.0,
-            fov: 90.0,
             viewmodel_fov: 68.0,
             viewmodel_offset: [2.5, -2.0, -2.0],
             show_viewmodel: true,
@@ -185,6 +250,11 @@ impl Settings {
         counts / dpi * 2.54
     }
 }
+
+/// World field of view: horizontal degrees at 4:3 (CS convention). Fixed for every
+/// player (not a setting) so that the perceived speed is the same for everyone;
+/// an old `fov` key in `settings.toml` is ignored.
+pub const FOV: f32 = 84.0;
 
 /// Vertical FOV (radians) from the CS-style 4:3 horizontal FOV, for an aspect ratio.
 pub fn vertical_fov(hfov_43_deg: f32) -> f32 {

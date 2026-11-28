@@ -10,14 +10,23 @@ use ps_physics::map::{BrushDef, MapDef, RampDir};
 use ps_physics::material::MaterialTable;
 use std::collections::BTreeMap;
 
+use crate::textures::{DEFAULT_TILE, SurfaceTextures};
+
 pub const SCALE: f32 = 0.0254;
+
+/// Where the sun light comes from (offset from the map centre, metres); the
+/// sky (`sky.rs`, `tools/sky.py`) puts its sun in the same direction.
+pub const SUN_OFFSET: Vec3 = Vec3::new(20.0, 60.0, 30.0);
 
 /// Marker for entities that belong to the loaded map (despawned on map change).
 #[derive(Component)]
 pub struct MapEntity;
 
-#[derive(Default)]
 struct MeshBuilder {
+    /// World size of one texture repetition, in game units.
+    tile: f32,
+    /// Light 64-unit checker in the vertex colours, for untextured materials.
+    checker: bool,
     pos: Vec<[f32; 3]>,
     normal: Vec<[f32; 3]>,
     color: Vec<[f32; 4]>,
@@ -26,6 +35,18 @@ struct MeshBuilder {
 }
 
 impl MeshBuilder {
+    fn new(tile: f32, checker: bool) -> Self {
+        Self {
+            tile,
+            checker,
+            pos: Vec::new(),
+            normal: Vec::new(),
+            color: Vec::new(),
+            uv: Vec::new(),
+            idx: Vec::new(),
+        }
+    }
+
     /// Adds a planar polygon (convex, any winding): the winding is fixed so the
     /// face points away from `inside`.
     fn poly(&mut self, pts: &[Vec3], inside: Vec3, shade: f32) {
@@ -38,26 +59,27 @@ impl MeshBuilder {
         if flip {
             n = -n;
         }
-        // Light per-face shading and a 64-unit checker so distances read well.
+        // Light per-face shading; the texture (or the checker) makes distances read.
         let base = self.pos.len() as u32;
         for p in pts {
             let (u, v) = if n.y.abs() > 0.7 {
                 (p.x, p.z)
             } else if n.x.abs() > 0.7 {
-                (p.z, p.y)
+                (p.z, -p.y)
             } else {
-                (p.x, p.y)
+                (p.x, -p.y)
             };
-            let checker = if ((u / 64.0).floor() + (v / 64.0).floor()) as i64 % 2 == 0 {
-                1.0
-            } else {
-                0.93
-            };
+            let checker =
+                if !self.checker || ((u / 64.0).floor() + (v / 64.0).floor()) as i64 % 2 == 0 {
+                    1.0
+                } else {
+                    0.93
+                };
             let s = shade * checker;
             self.pos.push((*p * SCALE).to_array());
             self.normal.push(n.to_array());
             self.color.push([s, s, s, 1.0]);
-            self.uv.push([u / 64.0, v / 64.0]);
+            self.uv.push([u / self.tile, v / self.tile]);
         }
         for i in 1..pts.len() as u32 - 1 {
             if flip {
@@ -191,13 +213,18 @@ pub fn spawn_map(
     materials: &mut Assets<StandardMaterial>,
     def: &MapDef,
     mats: &MaterialTable,
+    textures: &SurfaceTextures,
 ) {
     let mut per_mat: BTreeMap<String, MeshBuilder> = BTreeMap::new();
+    let builder = |mat: &str| match textures.0.get(mat) {
+        Some((_, tile)) => MeshBuilder::new(*tile, false),
+        None => MeshBuilder::new(DEFAULT_TILE, true),
+    };
     for b in &def.brushes {
         match b {
             BrushDef::Box { min, max, mat, .. } => per_mat
                 .entry(mat.clone())
-                .or_default()
+                .or_insert_with(|| builder(mat))
                 .cuboid(*min, *max, 1.0),
             BrushDef::Ramp {
                 min,
@@ -206,7 +233,7 @@ pub fn spawn_map(
                 mat,
             } => per_mat
                 .entry(mat.clone())
-                .or_default()
+                .or_insert_with(|| builder(mat))
                 .ramp(*min, *max, *high, 1.0),
             BrushDef::Clip { .. } => {}
         }
@@ -226,6 +253,7 @@ pub fn spawn_map(
             } else {
                 Color::linear_rgb(color[0], color[1], color[2])
             },
+            base_color_texture: textures.0.get(name.as_str()).map(|(t, _)| t.clone()),
             perceptual_roughness: if glass { 0.1 } else { 0.85 },
             alpha_mode: if glass {
                 AlphaMode::Blend
@@ -294,8 +322,7 @@ pub fn spawn_map(
             shadow_maps_enabled: true,
             ..default()
         },
-        Transform::from_translation(centre + Vec3::new(20.0, 60.0, 30.0))
-            .looking_at(centre, Vec3::Y),
+        Transform::from_translation(centre + SUN_OFFSET).looking_at(centre, Vec3::Y),
         MapEntity,
     ));
     commands.spawn((
@@ -317,7 +344,7 @@ mod tests {
 
     #[test]
     fn faces_point_outwards() {
-        let mut mb = MeshBuilder::default();
+        let mut mb = MeshBuilder::new(DEFAULT_TILE, true);
         mb.cuboid(Vec3::ZERO, Vec3::splat(10.0), 1.0);
         mb.ramp(
             Vec3::new(20.0, 0.0, 0.0),

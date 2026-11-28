@@ -141,7 +141,12 @@ pub fn setup_assets(
         .collect();
     let weapons = Hold::ALL
         .into_iter()
-        .filter_map(|h| weapon_mesh::weapon(h).map(|s| (h, meshes.add(s.into_mesh()))))
+        .filter_map(|h| {
+            // CC0 models where shipped, the procedural mesh otherwise.
+            super::weapon_models::mesh(h)
+                .or_else(|| weapon_mesh::weapon(h).map(|s| s.into_mesh()))
+                .map(|m| (h, meshes.add(m)))
+        })
         .collect();
     commands.insert_resource(CharacterAssets {
         body,
